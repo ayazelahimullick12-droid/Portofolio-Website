@@ -814,6 +814,15 @@ a.contact-card:hover { transform: translateY(-4px); border-color: var(--accent);
   .step-card p, .ticks li { font-size: .92rem; }
   .facts b { font-size: 1.4rem; }
 
+  /* a slimmer phone frame: the desktop bezel is far too heavy on a small preview */
+  .phone {
+    padding: 5px; border-radius: 26px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.16), 0 0 0 3px #0b0d18, 0 18px 40px -18px rgba(0,0,0,.7), 0 0 44px -18px var(--accent);
+  }
+  .phone::before { top: 9px; width: 30%; height: 11px; border-radius: 8px; }
+  .phone .screen { border-radius: 21px; }
+  .phone .live { top: 20px; }
+
   /* Agami: phone on the left, the scene's callout beside it */
   .stage-inner:has(> .callout) { justify-content: center; }
   .stage.with-callout .stage-inner > .phone { margin-right: auto; }
@@ -887,8 +896,8 @@ a.contact-card:hover { transform: translateY(-4px); border-color: var(--accent);
 
   /* full-screen apps */
   .device.is-expanded { inset: 58px 8px 8px 8px; }
-  .phone.is-expanded { inset: 58px auto 8px 50%; height: calc(100svh - 66px) !important; max-width: calc(100vw - 16px); padding: 6px; border-radius: 30px; }
-  .phone.is-expanded .screen { border-radius: 24px; }
+  .phone.is-expanded { inset: 58px auto 8px 50%; height: calc(100svh - 66px) !important; max-width: calc(100vw - 16px); padding: 4px; border-radius: 26px; }
+  .phone.is-expanded .screen { border-radius: 22px; }
   .crt.is-expanded { padding: 8px 8px 0; }
 
   /* skills + contact */

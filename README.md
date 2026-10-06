@@ -33,7 +33,8 @@ Then open http://localhost:8080. Opening `index.html` straight from disk also wo
 ## Publish
 
 Repository: [ayazelahimullick12-droid/Portofolio-Website](https://github.com/ayazelahimullick12-droid/Portofolio-Website).
-Push to `main` and GitHub Pages serves it from the root (Settings → Pages → Deploy from a branch → `main` / `/ (root)`).
+GitHub Pages serves the `gh-pages` branch, and `.github/workflows/publish.yml` mirrors `main` to it on every push,
+so publishing is just `git push origin main` (the site updates a minute or so later).
 Every path in the site is relative, so it works under the `/Portofolio-Website/` sub-path. `.nojekyll` makes Pages
 serve every file as-is.
 

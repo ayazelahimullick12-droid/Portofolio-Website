@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BRAC DCS — Schedule Miss Register Web Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Noto Sans Bengali','DM Sans',sans-serif;background:#f4eef2;color:#222;min-height:100vh}
+  select,textarea,input,button{font-family:inherit}
+  .bn{font-family:'Noto Sans Bengali','DM Sans',sans-serif}
+  .mono{font-family:'DM Mono','DM Sans',sans-serif!important}
+  a{color:inherit}
+
+  /* ── Login ── */
+  #login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#c8005e 0%,#7b1fa2 100%);padding:24px}
+  #login-card{background:#fff;border-radius:20px;padding:34px 32px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+  .pin-dot{width:13px;height:13px;border-radius:50%;border:2px solid #d6006e;background:transparent}
+  .pin-dot.filled{background:#d6006e}
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+  .key-btn{background:#fdf0f6;border:1px solid #f0d0e2;color:#c8005e;border-radius:12px;padding:13px 0;font-size:16px;font-weight:700;cursor:pointer}
+  .key-btn:hover{background:#fce4ec}
+  .demo-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:9px;cursor:pointer;font-size:11.5px;border:1px solid #f0e4ea;margin-bottom:6px}
+  .demo-row:hover{background:#fdf5f9}
+  .demo-tag{background:#fce4ec;color:#c8005e;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:800}
+
+  /* ── Layout ── */
+  #topbar{background:linear-gradient(135deg,#c8005e 0%,#e91e8c 55%,#c2185b 100%);color:#fff;padding:0 22px;box-shadow:0 4px 16px rgba(200,0,94,0.3);position:sticky;top:0;z-index:100}
+  #topbar-inner{max-width:1440px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:58px}
+  .crumb{font-size:11px;color:rgba(255,255,255,0.75);margin-top:1px}
+  #content{max-width:1440px;margin:0 auto;padding:22px}
+  .scope-banner{background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+
+  .stat-card{background:#faf7f5;border:1.5px solid #ece3ea;border-left:5px solid #999;border-radius:12px;padding:12px 14px}
+  .stat-card.full{background:#fff;border:2px solid #e91e8c}
+  .stat-label{font-size:9.5px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px}
+  .stat-num{font-size:23px;font-weight:800;color:#1a1a1a}
+
+  .panel{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:18px}
+  .panel-title{font-size:12px;font-weight:800;color:#d6006e;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px}
+
+  .styled-select,input[type=text],input[type=date]{border:1.5px solid #e8dde5;border-radius:9px;padding:8px 10px;font-size:12.5px;background:#fdf9fb;outline:none;width:100%}
+  .styled-select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><path d='M1 3l4 4 4-4' stroke='%23d6006e' stroke-width='1.5' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 10px center}
+  .f-label{font-size:10px;font-weight:700;color:#d6006e;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:5px}
+
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  thead th{background:#fdf0f6;color:#c8005e;font-weight:800;text-align:left;padding:9px 10px;white-space:nowrap;font-size:10px;text-transform:uppercase;letter-spacing:0.3px;position:sticky;top:0}
+  tbody td{padding:9px 10px;border-bottom:1px solid #f3ecef;white-space:nowrap}
+  tbody tr:hover{background:#fdf7fa;cursor:pointer}
+  .table-scroll{overflow-x:auto;border-radius:10px;border:1px solid #f0e4ea}
+  .status-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700}
+
+  .btn{border:none;border-radius:9px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .btn-primary{background:linear-gradient(135deg,#c8005e,#e91e8c);color:#fff;box-shadow:0 3px 10px rgba(200,0,94,0.25)}
+  .btn-outline{background:#fff;border:1.5px solid #e8dde5;color:#555}
+  .btn-outline:hover{background:#fdf5f9}
+  .btn-sm{padding:6px 11px;font-size:11px}
+
+  .page-btn{background:#fce4ec;color:#d6006e;border:none;border-radius:7px;padding:6px 11px;cursor:pointer;font-weight:700;font-size:12px}
+  .page-btn:disabled{background:#ececec;color:#ccc;cursor:default}
+  .page-btn.active{background:#d6006e;color:#fff}
+
+  /* Drawer */
+  #drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;display:none;align-items:stretch;justify-content:flex-end}
+  #drawer-overlay.open{display:flex}
+  #drawer{background:#fff;width:100%;max-width:460px;height:100%;overflow-y:auto;box-shadow:-8px 0 30px rgba(0,0,0,0.15)}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+  .info-cell{background:#faf5f8;border-radius:8px;padding:8px 9px}
+  .info-label{font-size:9px;color:#d6006e;font-weight:700;text-transform:uppercase;margin-bottom:2px}
+  .info-value{font-size:12.5px;font-weight:600;color:#222}
+  .info-full{grid-column:1/-1}
+
+  @media (max-width: 900px){
+    .stat-grid{grid-template-columns:repeat(2,1fr)!important}
+    #content{padding:14px}
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="toast" style="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:30px;font-size:12.5px;font-weight:600;z-index:1200;box-shadow:0 6px 20px rgba(0,0,0,0.3);display:none"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// i18n
+// ══════════════════════════════════════════════════════════════
+const T = {
+  en:{
+    portalTitle:"Schedule Miss Register", portalSub:"DCS Web Portal", breadcrumb:"Operations / Reports  ›  Schedule Miss Register",
+    loginTitle:"DCS Web Portal Login", loginSub:"Enter your Staff PIN", demoUsers:"Demo accounts", loginErr:"Invalid PIN — try a demo account below",
+    logout:"Log Out", scopeLabel:"Viewing scope", welcomeBack:"Welcome",
+    total:"Total", newmiss:"New Schedule Miss", noCommit:"Commitment Date Not Set", reasonNS:"Reason Not Set",
+    remiss:"Re-miss", partial:"Partial Collection", full:"Full Collection", grace:"Grace Period",
+    filters:"Filters", branch:"Branch", cdoF:"CDO", voCode:"VO Code", status:"Status", dateFrom:"Schedule Miss Date From", dateTo:"To",
+    allOpt:"All", clearFilters:"Clear All", records:"records", record:"record", perPage:"Per page",
+    exportPdf:"Export PDF", exportCsv:"Export CSV", exportExcel:"Export Excel",
+    colDivision:"Division", colRegion:"Region", colArea:"Area", colBranch:"Branch", colBranchCode:"Branch Code", colProjectCode:"Project Code",
+    colCdo:"CDO", colVo:"VO", colLoanId:"Loan No.", colClientNo:"Client No", colClientName:"Client Name", colDisbDate:"Disbursement Date", colDisbAmt:"Disbursement Amount",
+    colTargetDate:"VO Collection Date", colStatus:"Status", colDue:"Due", colReason:"Reason", colCommit:"Commitment Date", colFollowUp:"Follow-up",
+    colProject:"Project", colSubmission:"Submission Date", projectDabi:"Dabi",
+    noRecords:"No records found", drawerTitle:"Record Detail", followUp:"Follow-up (Supervisory)", addFollowUp:"+ Add Follow-up",
+    followUpDate:"Follow-up Date", followUpComment:"Follow-up Comment", saveFollowUp:"Save Follow-up", followUpBy:"by", noFollowUp:"No follow-up recorded yet",
+    viewOnlyFollowUp:"🔒 View-only — Programme Manager and HO Admin cannot add or edit Follow-up data", reasonLabel:"Reason for Schedule Miss", notSelected:"Not yet selected",
+    phone:"Phone", payHistory:"Payment History", disbursementDate:"Disbursement Date", disbursedAmount:"Disbursed Amount", installmentAmount:"Installment Amount",
+    close:"Close", fillRequired:"Please fill all required fields", savedFollowUp:"✅ Follow-up saved",
+    stFull:"Full Collection", stPartial:"Partial Collection", stRemiss:"Re-miss", stNewMiss:"New Schedule Miss", stGrace:"Grace Period", stActive:"Active (Unclassified)",
+    roleAM:"Area Manager", roleRM:"Regional Manager", rolePM:"Programme Manager", roleHO:"HO Admin",
+    branchesInScope:"branches", cdosInScope:"CDOs",
+    importCdoBtn:"Import CDO/BM Data", timeSimTitle:"Time Simulator", timeSimSub:"Move the portal's simulated \"today\" forward — commitment dates and Re-miss detection recompute for imported records too.",
+    timeSimSetTo:"Set date &amp; time to", timeSimApply:"Apply", timeSimQuickTitle:"Quick advance", timeSimPlus1Day:"+1 Day", timeSimPlus1Week:"+1 Week", timeSimPlus1Month:"+1 Month",
+    importSuccess:"✅ Imported records into Mirpur-2", importFail:"⚠️ Invalid file — expected a CDO/BM app database export",
+  },
+  bn:{
+    portalTitle:"সিডিউল মিস রেজিস্টার", portalSub:"ডিসিএস ওয়েব পোর্টাল", breadcrumb:"অপারেশনস / রিপোর্টস  ›  সিডিউল মিস রেজিস্টার",
+    loginTitle:"ডিসিএস ওয়েব পোর্টাল লগইন", loginSub:"আপনার স্টাফ পিন লিখুন", demoUsers:"ডেমো অ্যাকাউন্ট", loginErr:"ভুল পিন — নিচের ডেমো অ্যাকাউন্ট ব্যবহার করুন",
+    logout:"লগ আউট", scopeLabel:"দৃশ্যমান পরিধি", welcomeBack:"স্বাগতম",
+    total:"মোট", newmiss:"নতুন সিডিউল মিস", noCommit:"কমিটমেন্ট তারিখ নির্ধারণ করা হয়নি", reasonNS:"কারণ নির্ধারণ করা হয়নি",
+    remiss:"রি-মিস", partial:"আংশিক আদায়", full:"সম্পূর্ণ আদায়", grace:"গ্রেস পিরিয়ড",
+    filters:"ফিল্টার", branch:"শাখা", cdoF:"সিডিও", voCode:"ভিও কোড", status:"অবস্থা", dateFrom:"সিডিউল মিস তারিখ থেকে", dateTo:"পর্যন্ত",
+    allOpt:"সব", clearFilters:"সব মুছুন", records:"রেকর্ড", record:"রেকর্ড", perPage:"প্রতি পৃষ্ঠা",
+    exportPdf:"পিডিএফ এক্সপোর্ট", exportCsv:"সিএসভি এক্সপোর্ট", exportExcel:"এক্সেল এক্সপোর্ট",
+    colDivision:"বিভাগ", colRegion:"অঞ্চল", colArea:"এরিয়া", colBranch:"শাখা", colBranchCode:"শাখা কোড", colProjectCode:"প্রজেক্ট কোড",
+    colCdo:"সিডিও", colVo:"ভিও", colLoanId:"ঋণ নং", colClientNo:"ক্লায়েন্ট নং", colClientName:"ক্লায়েন্টের নাম", colDisbDate:"বিতরণের তারিখ", colDisbAmt:"বিতরণকৃত পরিমাণ",
+    colTargetDate:"ভিও সংগ্রহ তারিখ", colStatus:"অবস্থা", colDue:"বকেয়া", colReason:"কারণ", colCommit:"কমিটমেন্ট তারিখ", colFollowUp:"ফলো-আপ",
+    colProject:"প্রজেক্ট", colSubmission:"জমার তারিখ", projectDabi:"দাবি",
+    noRecords:"কোনো রেকর্ড পাওয়া যায়নি", drawerTitle:"রেকর্ড বিবরণ", followUp:"ফলো-আপ (সুপারভাইজরি)", addFollowUp:"+ ফলো-আপ যোগ করুন",
+    followUpDate:"ফলো-আপ তারিখ", followUpComment:"ফলো-আপ মন্তব্য", saveFollowUp:"ফলো-আপ সংরক্ষণ করুন", followUpBy:"কর্তৃক", noFollowUp:"এখনো কোনো ফলো-আপ নেই",
+    viewOnlyFollowUp:"🔒 শুধুমাত্র প্রদর্শন — প্রোগ্রাম ম্যানেজার এবং এইচও অ্যাডমিন ফলো-আপ যোগ বা পরিবর্তন করতে পারবেন না", reasonLabel:"সিডিউল মিসের কারণ", notSelected:"নির্বাচন করা হয়নি",
+    phone:"ফোন", payHistory:"আদায়ের ইতিহাস", disbursementDate:"বিতরণের তারিখ", disbursedAmount:"বিতরণকৃত পরিমাণ", installmentAmount:"কিস্তির পরিমাণ",
+    close:"বন্ধ করুন", fillRequired:"সকল আবশ্যক তথ্য পূরণ করুন", savedFollowUp:"✅ ফলো-আপ সংরক্ষিত হয়েছে",
+    stFull:"সম্পূর্ণ আদায়", stPartial:"আংশিক আদায়", stRemiss:"রি-মিস", stNewMiss:"নতুন সিডিউল মিস", stGrace:"গ্রেস পিরিয়ড", stActive:"সক্রিয় (অশ্রেণীবদ্ধ)",
+    roleAM:"এরিয়া ম্যানেজার", roleRM:"রিজিওনাল ম্যানেজার", rolePM:"প্রোগ্রাম ম্যানেজার", roleHO:"এইচও অ্যাডমিন",
+    branchesInScope:"শাখা", cdosInScope:"সিডিও",
+    importCdoBtn:"সিডিও/বিএম ডেটা আমদানি", timeSimTitle:"টাইম সিমুলেটর", timeSimSub:"পোর্টালের সিমুলেটেড \"আজ\" এগিয়ে নিন — আমদানিকৃত রেকর্ডের জন্যও কমিটমেন্ট তারিখ এবং রি-মিস সনাক্তকরণ পুনরায় গণনা হবে।",
+    timeSimSetTo:"তারিখ ও সময় নির্ধারণ করুন", timeSimApply:"প্রয়োগ করুন", timeSimQuickTitle:"দ্রুত এগিয়ে যান", timeSimPlus1Day:"+১ দিন", timeSimPlus1Week:"+১ সপ্তাহ", timeSimPlus1Month:"+১ মাস",
+    importSuccess:"✅ মিরপুর-২ তে রেকর্ড আমদানি হয়েছে", importFail:"⚠️ অবৈধ ফাইল — সিডিও/বিএম অ্যাপের ডেটাবেস এক্সপোর্ট প্রয়োজন",
+  },
+};
+let lang="en";
+function t(k){return (T[lang]&&T[lang][k])||k;}
+
+// ══════════════════════════════════════════════════════════════
+// Org hierarchy + users
+// ══════════════════════════════════════════════════════════════
+const ORG = {
+  divisions:{
+    "Dhaka Division":["Dhaka Region"],
+    "Chittagong Division":["Chittagong Region"],
+  },
+  regions:{
+    "Dhaka Region":{division:"Dhaka Division", rm:"Faruk Ahmed", rmBn:"ফারুক আহমেদ", areas:["Mirpur Area","Gazipur Area"]},
+    "Chittagong Region":{division:"Chittagong Division", rm:"Mahmuda Khatun", rmBn:"মাহমুদা খাতুন", areas:["Chittagong Area"]},
+  },
+  areas:{
+    "Mirpur Area":{region:"Dhaka Region", am:"Shirajul Islam", amBn:"সিরাজুল ইসলাম", branches:["Mirpur-2","Mirpur-6"]},
+    "Gazipur Area":{region:"Dhaka Region", am:"Farida Yasmin", amBn:"ফরিদা ইয়াসমিন", branches:["Gazipur Sadar"]},
+    "Chittagong Area":{region:"Chittagong Region", am:"Rezaul Karim", amBn:"রেজাউল করিম", branches:["Chittagong Sadar"]},
+  },
+  branches:{
+    "Mirpur-2":{area:"Mirpur Area", code:"BR-204", project:"PRJ-11", bm:"Kamal Hossain", bmBn:"কামাল হোসেন",
+      cdos:[{id:"CDO-014",name:"Rima Aktar",nameBn:"রিমা আক্তার"},{id:"CDO-021",name:"Shirin Akter",nameBn:"শিরিন আক্তার"}]},
+    "Mirpur-6":{area:"Mirpur Area", code:"BR-212", project:"PRJ-11", bm:"Nasima Begum", bmBn:"নাসিমা বেগম",
+      cdos:[{id:"CDO-031",name:"Habibur Rahman",nameBn:"হাবিবুর রহমান"},{id:"CDO-042",name:"Selina Akter",nameBn:"সেলিনা আক্তার"}]},
+    "Gazipur Sadar":{area:"Gazipur Area", code:"BR-301", project:"PRJ-14", bm:"Jamal Uddin", bmBn:"জামাল উদ্দিন",
+      cdos:[{id:"CDO-051",name:"Anisur Rahman",nameBn:"আনিসুর রহমান"},{id:"CDO-062",name:"Ruma Khatun",nameBn:"রুমা খাতুন"}]},
+    "Chittagong Sadar":{area:"Chittagong Area", code:"BR-401", project:"PRJ-19", bm:"Sultana Razia", bmBn:"সুলতানা রাজিয়া",
+      cdos:[{id:"CDO-071",name:"Kamruzzaman",nameBn:"কামরুজ্জামান"},{id:"CDO-082",name:"Nasrin Jahan",nameBn:"নাসরিন জাহান"}]},
+  },
+  programme:{name:"BRAC MF Central Programme", pm:"Nasreen Chowdhury", pmBn:"নাসরিন চৌধুরী", regions:["Dhaka Region","Chittagong Region"]},
+};
+
+const USERS = {
+  "2001":{role:"am", name:"Shirajul Islam", nameBn:"সিরাজুল ইসলাম", scopeType:"area", scopeName:"Mirpur Area"},
+  "2002":{role:"am", name:"Farida Yasmin",  nameBn:"ফরিদা ইয়াসমিন", scopeType:"area", scopeName:"Gazipur Area"},
+  "2003":{role:"am", name:"Rezaul Karim",   nameBn:"রেজাউল করিম",   scopeType:"area", scopeName:"Chittagong Area"},
+  "3001":{role:"rm", name:"Faruk Ahmed",    nameBn:"ফারুক আহমেদ",   scopeType:"region", scopeName:"Dhaka Region"},
+  "3002":{role:"rm", name:"Mahmuda Khatun", nameBn:"মাহমুদা খাতুন", scopeType:"region", scopeName:"Chittagong Region"},
+  "4001":{role:"pm", name:"Nasreen Chowdhury", nameBn:"নাসরিন চৌধুরী", scopeType:"programme", scopeName:ORG.programme.name},
+  "5001":{role:"ho", name:"Ayesha Rahman",  nameBn:"আয়েশা রহমান",   scopeType:"global", scopeName:"Global"},
+};
+
+// ══════════════════════════════════════════════════════════════
+// Helpers
+// ══════════════════════════════════════════════════════════════
+const REASON_KEYS=["Insufficient Fund","Business/Income Issue","Client Unavailable","Migration","Family Issue","Illness/Emergency","Natural Disaster","Other"];
+const REASONS_BN =["অপর্যাপ্ত তহবিল","ব্যবসা/আয়ের সমস্যা","ক্লায়েন্ট অনুপস্থিত","স্থানান্তর","পারিবারিক সমস্যা","অসুস্থতা/জরুরি অবস্থা","প্রাকৃতিক দুর্যোগ","অন্যান্য"];
+let TODAY = new Date("2025-04-15T09:00:00");
+function nowStr(){ return TODAY.toISOString(); }
+const fmt = n=>"৳"+Number(n||0).toLocaleString("en-IN");
+const fmtDate = d=>d?new Date(d).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}):"—";
+const fmtDateTime = d=>d?new Date(d).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
+const getCollected = row=>row.payments.reduce((s,p)=>s+p.amount,0);
+const getLatest = row=>!row.payments.length?"":([...row.payments].sort((a,b)=>new Date(b.date)-new Date(a.date))[0].date);
+function reasonDisplay(key){ const i=REASON_KEYS.indexOf(key); return i>=0?(lang==="bn"?REASONS_BN[i]:key):key; }
+const commitRangeStr = row=>(row.commitmentFrom&&row.commitmentTo)?`${fmtDate(row.commitmentFrom)} – ${fmtDate(row.commitmentTo)}`:"—";
+
+// Grace Period is purely a function of Disbursement Date vs "today" — mirrors the CDO/BM
+// app exactly, so imported records classify identically here. Day 0-14 since disbursement
+// (15 calendar days) = Grace; day 15-29 = normal tracking; from day 30 with no activity, the
+// record is dropped.
+function daysSinceDisbursement(row){
+  return row.disbursementDate ? Math.floor((TODAY-new Date(row.disbursementDate))/86400000) : null;
+}
+function isGraceActive(row){
+  const d=daysSinceDisbursement(row);
+  return d!==null && d>=0 && d<15;
+}
+function graceEndDate(row){
+  if(!row.disbursementDate) return null;
+  const end=new Date(row.disbursementDate); end.setDate(end.getDate()+15); return end;
+}
+function graceDaysLeft(row){
+  const end=graceEndDate(row);
+  if(!end) return null;
+  return Math.max(0, Math.ceil((end-TODAY)/86400000));
+}
+function isDroppable(row){
+  const d=daysSinceDisbursement(row);
+  if(d===null || d<30) return false;
+  if(getCollected(row)>0 || row.remissLocked || (row.missedCommitmentCount||0)>0) return false;
+  if(row.commitmentTo && new Date(row.commitmentTo)>=TODAY) return false;
+  return true;
+}
+
+function getStatus(row){
+  if(isGraceActive(row)) return "grace";
+  const c=getCollected(row);
+  if(c>=row.targetAmount) return "full";
+  // Sticky Re-miss (imported rows carry remissLocked explicitly); fall back to the date check
+  // for the portal's own mock rows, which don't set that flag.
+  if(row.remissLocked) return "remiss";
+  if(row.commitmentTo && new Date(row.commitmentTo)<TODAY) return "remiss";
+  if(c>0) return "partial";
+  if(!row.previousMisses || row.previousMisses===0) return "newmiss";
+  return "active";
+}
+
+// Runs on every clock change — mirrors the CDO/BM app's sweep so imported records behave
+// identically here as they do there when time moves forward.
+function runTimeSweep(){
+  DATA.forEach(row=>{
+    if(getCollected(row)>=row.targetAmount) return;
+    if(isGraceActive(row)) return;
+    if(!row.commitmentTo) return;
+    if(new Date(row.commitmentTo) >= TODAY) return;
+    if(row.lastCountedCommitmentTo === row.commitmentTo) return;
+    const collectedNow=getCollected(row);
+    row.missedCommitmentCount=(row.missedCommitmentCount||0)+1;
+    row.remissLocked=true;
+    row.remissHistory=row.remissHistory||[];
+    row.remissHistory.push({commitmentFrom:row.commitmentFrom, commitmentTo:row.commitmentTo, detectedAt:nowStr(), outcome:collectedNow>0?"partial":"missed", dueAtTime:row.targetAmount-collectedNow, reason:row.reason||""});
+    row.lastCountedCommitmentTo=row.commitmentTo;
+    if(row.missedCommitmentCount>=2) row.escalated=true;
+  });
+  DATA = DATA.filter(row=>!isDroppable(row));
+}
+
+// Simple seeded RNG for deterministic mock data
+let __seed=42;
+function rnd(){ __seed=(__seed*9301+49297)%233280; return __seed/233280; }
+function pick(arr){ return arr[Math.floor(rnd()*arr.length)]; }
+function randInt(a,b){ return a+Math.floor(rnd()*(b-a+1)); }
+
+const NAME_POOL=["Rabeya Khatun","Abdul Karim","Fatima Begum","Ruhul Amin","Jamila Begum","Merjun Begum","Hasena Akter","Bilkis Khanom","Nasrin Begum","Kamrun Sultana","Roksana Begum","Momtaz Begum","Lovely Akter","Jahanara Banu","Kohinur Bibi","Amena Parvin","Salma Khanom","Zarina Akter","Nurjahan Begum","Hafiza Khanom","Asma Sultana","Parveen Bibi","Dilruba Khanom","Rokeya Begum","Sumaiya Akter","Farzana Begum","Marium Banu","Shahnaz Akter","Razia Sultana","Kamrun Bibi","Monira Khanom","Laila Parvin","Halima Banu","Saleha Begum","Rahema Akter"];
+
+let __sl=0, __nameIdx=0;
+function nextName(){ return NAME_POOL[__nameIdx++ % NAME_POOL.length]; }
+function makePhone(n){ const pfx=["017","018","019","016"][n%4]; return pfx+String(300+n).padStart(3,"0")+"-"+String(100000+n*37).slice(-6); }
+
+// Generate ~16 records per branch cycling through all status categories
+function genBranchRecords(branchName){
+  const b=ORG.branches[branchName];
+  const area=ORG.areas[b.area];
+  const region=ORG.regions[area.region];
+  const division=region.division;
+  const voCodes=["31"+randInt(0,9)+"0","31"+randInt(0,9)+"1","31"+randInt(0,9)+"2"];
+  const rows=[];
+  const plan=[
+    ...Array(3).fill("full"), ...Array(3).fill("grace"), ...Array(3).fill("newmiss"),
+    ...Array(3).fill("partial"), ...Array(2).fill("remiss"), ...Array(2).fill("active"),
+  ];
+  plan.forEach((kind,i)=>{
+    __sl++;
+    const cdo=b.cdos[i%b.cdos.length];
+    const voCode=voCodes[i%voCodes.length];
+    const targetAmount=[14250,19000,23750,28500][randInt(0,3)];
+    const targetDate="2025-04-"+String(randInt(8,22)).padStart(2,"0");
+    let row={
+      loanId:"MOCK-"+String(__sl).padStart(5,"0"), division, region:area.region, area:b.area, branch:branchName,
+      branchCode:b.code, projectCode:b.project, project: rnd()<0.25?"Dabi":"Progoti",
+      cdo:cdo.id, cdoName:cdo.name, cdoNameBn:cdo.nameBn,
+      voCode, clientNo:String(1000+__sl), clientName:nextName(), phone:makePhone(__sl),
+      disbursementDate:"2025-01-"+String(randInt(5,25)).padStart(2,"0"),
+      disbursedAmount:targetAmount*8,
+      targetDate, submissionDate:"2025-04-"+String(Math.min(22,parseInt(targetDate.slice(-2))+randInt(0,2))).padStart(2,"0"),
+      targetAmount, payments:[], reason:"", commitmentFrom:"", commitmentTo:"", commitmentHistory:[],
+      previousMisses:0, missedCommitmentCount:0, escalated:false,
+      followUp:null,
+    };
+    if(kind==="full"){
+      row.payments=[{date:row.targetDate,amount:targetAmount}];
+      row.reason=pick(REASON_KEYS);
+    } else if(kind==="grace"){
+      row.disbursementDate="2025-04-"+String(Math.max(1,randInt(1,8))).padStart(2,"0");
+    } else if(kind==="newmiss"){
+      row.previousMisses=0;
+      row.reason=pick(REASON_KEYS);
+      row.commitmentFrom="2025-04-"+String(randInt(23,26)).padStart(2,"0");
+      row.commitmentTo="2025-04-"+String(randInt(27,29)).padStart(2,"0");
+    } else if(kind==="partial"){
+      row.payments=[{date:row.targetDate,amount:Math.round(targetAmount*0.4)}];
+      row.reason=pick(REASON_KEYS);
+      row.previousMisses=randInt(0,1);
+      row.commitmentFrom="2025-04-"+String(randInt(23,26)).padStart(2,"0");
+      row.commitmentTo="2025-04-"+String(randInt(27,29)).padStart(2,"0");
+    } else if(kind==="remiss"){
+      row.reason=pick(REASON_KEYS);
+      row.commitmentFrom="2025-03-"+String(randInt(11,24)).padStart(2,"0");
+      row.commitmentTo="2025-03-"+String(randInt(25,28)).padStart(2,"0");
+      row.previousMisses=1;
+      row.missedCommitmentCount=randInt(1,2);
+      row.escalated = row.missedCommitmentCount>=2;
+      if(row.escalated && rnd()>0.4){
+        row.followUp={date:"2025-04-1"+randInt(0,6), comment:pick([
+          "Visited household — requests one more week.",
+          "Called client — partial payment promised.",
+          "Client's spouse hospitalised, financial hardship confirmed.",
+        ]), by:b.bm, at:"2025-04-1"+randInt(0,6)+"T09:00:00Z"};
+      }
+    } else if(kind==="active"){
+      row.previousMisses=randInt(1,3);
+      row.reason=pick(REASON_KEYS);
+      row.commitmentFrom="2025-04-"+String(randInt(23,26)).padStart(2,"0");
+      row.commitmentTo="2025-04-"+String(randInt(27,29)).padStart(2,"0");
+    }
+    rows.push(row);
+  });
+  return rows;
+}
+
+let DATA=[];
+Object.keys(ORG.branches).forEach(bn=>{ DATA=DATA.concat(genBranchRecords(bn)); });
+
+// ══════════════════════════════════════════════════════════════
+// Scoping — hierarchical visibility per FR-19
+// ══════════════════════════════════════════════════════════════
+function scopedData(){
+  if(!currentUser) return [];
+  switch(currentUser.scopeType){
+    case "area":      return DATA.filter(r=>r.area===currentUser.scopeName);
+    case "region":    return DATA.filter(r=>r.region===currentUser.scopeName);
+    case "programme": return DATA.filter(r=>ORG.programme.regions.includes(r.region));
+    case "global":    return DATA;
+    default: return [];
+  }
+}
+function scopeStats(){
+  const d=scopedData();
+  const branches=new Set(d.map(r=>r.branch));
+  const cdos=new Set(d.map(r=>r.cdo));
+  return {branches:branches.size, cdos:cdos.size};
+}
+
+// ══════════════════════════════════════════════════════════════
+// App state
+// ══════════════════════════════════════════════════════════════
+let currentUser=null;
+let loginPin="", loginError=false;
+let search="";
+let filters={division:"All", region:"All", area:"All", branch:"All", cdo:"All", voCode:"All", status:"All", project:"All", dateFrom:"", dateTo:""};
+let showFilters=true;
+let page=1, perPage=25;
+let drawerRow=null;
+let fuEditing=false;
+let showTimeSim=false;
+
+function getFiltered(){
+  return scopedData().filter(r=>{
+    if(filters.division!=="All" && r.division!==filters.division) return false;
+    if(filters.region!=="All" && r.region!==filters.region) return false;
+    if(filters.area!=="All" && r.area!==filters.area) return false;
+    if(filters.branch!=="All" && r.branch!==filters.branch) return false;
+    if(filters.cdo!=="All" && r.cdo!==filters.cdo) return false;
+    if(filters.voCode!=="All" && r.voCode!==filters.voCode) return false;
+    if(filters.status!=="All" && getStatus(r)!==filters.status) return false;
+    if(filters.project!=="All" && r.project!==filters.project) return false;
+    if(filters.dateFrom && r.targetDate < filters.dateFrom) return false;
+    if(filters.dateTo && r.targetDate > filters.dateTo) return false;
+    if(search){
+      const q=search.toLowerCase();
+      return r.clientName.toLowerCase().includes(q) || r.clientNo.includes(q) || r.voCode.includes(q) || r.cdo.toLowerCase().includes(q);
+    }
+    return true;
+  });
+}
+// Progressively narrow scoped data by the higher-level filters already chosen,
+// so each dropdown's options reflect what's still reachable — this is what
+// makes "RM filters area and downwards" / "PM filters region and downwards" work.
+function preScopedForFilters(uptoLevel){
+  let d=scopedData();
+  if(uptoLevel==="division") return d;
+  if(filters.division!=="All") d=d.filter(r=>r.division===filters.division);
+  if(uptoLevel==="region") return d;
+  if(filters.region!=="All") d=d.filter(r=>r.region===filters.region);
+  if(uptoLevel==="area") return d;
+  if(filters.area!=="All") d=d.filter(r=>r.area===filters.area);
+  if(uptoLevel==="branch") return d;
+  if(filters.branch!=="All") d=d.filter(r=>r.branch===filters.branch);
+  if(uptoLevel==="cdo") return d;
+  if(filters.cdo!=="All") d=d.filter(r=>r.cdo===filters.cdo);
+  return d;
+}
+function calcStats(){
+  const d=scopedData();
+  return {
+    total:d.length,
+    newmiss:d.filter(r=>getStatus(r)==="newmiss").length,
+    remiss:d.filter(r=>getStatus(r)==="remiss").length,
+    partial:d.filter(r=>getStatus(r)==="partial").length,
+    full:d.filter(r=>getStatus(r)==="full").length,
+    grace:d.filter(r=>getStatus(r)==="grace").length,
+  };
+}
+function toast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.style.display="block";
+  clearTimeout(window.__t); window.__t=setTimeout(()=>el.style.display="none",2600);
+}
+const STATUS_COLORS={
+  full:{bg:"#e8f5e9",fg:"#2e7d32"}, partial:{bg:"#fffde7",fg:"#a56d00"}, remiss:{bg:"#ffcdd2",fg:"#7f0000"},
+  newmiss:{bg:"#fce4f5",fg:"#a3007a"}, grace:{bg:"#f3e5f5",fg:"#7b1fa2"}, active:{bg:"#f0f0f0",fg:"#666"},
+};
+function statusChip(st){
+  const c=STATUS_COLORS[st]; const label={full:t("stFull"),partial:t("stPartial"),remiss:t("stRemiss"),newmiss:t("stNewMiss"),grace:t("stGrace"),active:t("stActive")}[st];
+  return `<span class="status-chip" style="background:${c.bg};color:${c.fg}">${label}</span>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════
+function render(){
+  if(!currentUser){ document.getElementById("root").innerHTML=renderLogin(); bindLogin(); return; }
+  document.getElementById("root").innerHTML = renderApp();
+  bindApp();
+}
+
+function renderLogin(){
+  const dots=[0,1,2,3].map(i=>`<div class="pin-dot ${loginPin.length>i?"filled":""}"></div>`).join("");
+  const keys=["1","2","3","4","5","6","7","8","9","","0","⌫"];
+  const demoList=[
+    {pin:"2001",label:"Shirajul Islam",role:"AM",scope:"Mirpur Area"},
+    {pin:"2002",label:"Farida Yasmin",role:"AM",scope:"Gazipur Area"},
+    {pin:"2003",label:"Rezaul Karim",role:"AM",scope:"Chittagong Area"},
+    {pin:"3001",label:"Faruk Ahmed",role:"RM",scope:"Dhaka Region"},
+    {pin:"3002",label:"Mahmuda Khatun",role:"RM",scope:"Chittagong Region"},
+    {pin:"4001",label:"Nasreen Chowdhury",role:"PM",scope:ORG.programme.name},
+    {pin:"5001",label:"Ayesha Rahman",role:"HO",scope:"Global (All Programmes)"},
+  ];
+  return `
+  <div id="login-wrap">
+    <div id="login-card">
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="width:52px;height:52px;border-radius:14px;background:#fce4ec;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px">🏦</div>
+        <div style="font-size:18px;font-weight:800;color:#1a1a1a">BRAC DCS</div>
+        <div style="font-size:12px;color:#999;margin-top:2px">${t("loginTitle")}</div>
+      </div>
+      <div style="text-align:center;font-size:11.5px;color:#999;margin-bottom:10px">${t("loginSub")}</div>
+      <div style="display:flex;justify-content:center;gap:10px;margin-bottom:4px">${dots}</div>
+      ${loginError?`<div style="text-align:center;color:#e53935;font-size:11px;margin-top:6px">${t("loginErr")}</div>`:""}
+      <div class="keypad">${keys.map(k=>k===""?`<div></div>`:`<button class="key-btn" data-key="${k}">${k}</button>`).join("")}</div>
+      <div style="margin-top:16px">
+        <div style="font-size:10px;color:#bbb;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;margin-bottom:8px">${t("demoUsers")}</div>
+        ${demoList.map(d=>`
+          <div class="demo-row" data-pin="${d.pin}">
+            <div><b>${d.pin}</b> — ${d.label}<div style="color:#999;font-size:10px">${d.scope}</div></div>
+            <span class="demo-tag">${d.role}</span>
+          </div>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+function tryLogin(){
+  const u=USERS[loginPin];
+  if(u){ currentUser=u; loginPin=""; loginError=false; page=1; render(); toast(`${t("welcomeBack")}, ${currentUser.name}`); }
+  else { loginError=true; loginPin=""; render(); }
+}
+function bindLogin(){
+  document.querySelectorAll(".key-btn").forEach(b=>{
+    b.onclick=()=>{
+      const k=b.dataset.key;
+      if(k==="⌫") loginPin=loginPin.slice(0,-1);
+      else if(loginPin.length<4) loginPin+=k;
+      if(loginPin.length===4) return tryLogin();
+      render();
+    };
+  });
+  document.querySelectorAll(".demo-row").forEach(b=>{ b.onclick=()=>{ loginPin=b.dataset.pin; tryLogin(); }; });
+}
+
+function roleLabel(role){ return {am:t("roleAM"),rm:t("roleRM"),pm:t("rolePM"),ho:t("roleHO")}[role]||role; }
+function canEditFollowUp(){ return currentUser.role==="am"||currentUser.role==="rm"; }
+
+function renderApp(){
+  const bnClass=lang==="bn"?"bn":"";
+  const filtered=getFiltered();
+  const totalPages=Math.ceil(filtered.length/perPage)||1;
+  if(page>totalPages) page=totalPages;
+  const paged=filtered.slice((page-1)*perPage,page*perPage);
+  const stats=calcStats();
+  const sstats=scopeStats();
+  const uName=lang==="bn"?currentUser.nameBn:currentUser.name;
+
+  const STAT_CARDS=[
+    {key:"total",full:true,border:"#e91e8c",count:stats.total,label:t("total")},
+    {key:"newmiss",border:"#d500a0",count:stats.newmiss,label:t("newmiss")},
+    {key:"remiss",border:"#7f0000",count:stats.remiss,label:t("remiss")},
+    {key:"partial",border:"#f9a825",count:stats.partial,label:t("partial")},
+    {key:"full",border:"#2e7d32",count:stats.full,label:t("full")},
+    {key:"grace",border:"#7b1fa2",count:stats.grace,label:t("grace")},
+  ];
+
+  // Which hierarchy filters this role is allowed to use: RM=area↓, PM=region↓, HO=division↓ (everything)
+  const showDivision = currentUser.role==="ho";
+  const showRegion   = currentUser.role==="ho" || currentUser.role==="pm";
+  const showArea     = currentUser.role==="ho" || currentUser.role==="pm" || currentUser.role==="rm";
+
+  const divisionOpts=["All",...new Set(scopedData().map(r=>r.division))];
+  const regionOpts=["All",...new Set(preScopedForFilters("division").map(r=>r.region))];
+  const areaOpts=["All",...new Set(preScopedForFilters("region").map(r=>r.area))];
+  const branchOpts=["All",...new Set(preScopedForFilters("area").map(r=>r.branch))];
+  const cdoOpts=["All",...new Set(preScopedForFilters("branch").map(r=>r.cdo))];
+  const voOpts=["All",...new Set(preScopedForFilters("cdo").map(r=>r.voCode))].sort();
+  const statusOpts=["All","newmiss","remiss","partial","full","grace","active"];
+  const projectOpts=["All","Dabi"];
+
+  const half=2;
+  let start=Math.max(1,page-half), end=Math.min(totalPages,page+half);
+  if(end-start<half*2){ start=Math.max(1,end-half*2); end=Math.min(totalPages,start+half*2); }
+  const pageNums=[]; for(let i=start;i<=end;i++) pageNums.push(i);
+
+  return `
+  <div id="topbar">
+    <div id="topbar-inner">
+      <div>
+        <div style="font-size:15px;font-weight:800" class="${bnClass}">${t("portalTitle")}</div>
+        <div class="crumb ${bnClass}">${t("breadcrumb")}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="btn-import-cdo" title="${t('importCdoBtn')}" style="background:rgba(255,255,255,0.18);color:#fff;border:1.5px solid rgba(255,255,255,0.28);border-radius:18px;padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer">📂</button>
+        <input type="file" id="import-cdo-file" accept="application/json" style="display:none"/>
+        <button id="btn-timesim" title="${t('timeSimTitle')}" style="background:rgba(255,255,255,0.18);color:#fff;border:1.5px solid rgba(255,255,255,0.28);border-radius:18px;padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer">🕐 ${fmtDate(TODAY)}</button>
+        <button id="btn-lang" style="background:rgba(255,255,255,0.18);color:#fff;border:1.5px solid rgba(255,255,255,0.28);border-radius:18px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer">${lang==="en"?"বাং":"EN"}</button>
+        <div style="text-align:right">
+          <div style="font-size:12.5px;font-weight:700">${uName}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.75)">${roleLabel(currentUser.role)} · ${lang==="bn"?"":""}${currentUser.scopeName}</div>
+        </div>
+        <button id="btn-logout" style="background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.28);color:#fff;border-radius:9px;padding:7px 12px;font-size:11.5px;font-weight:700;cursor:pointer" class="${bnClass}">${t("logout")}</button>
+      </div>
+    </div>
+  </div>
+  <div id="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(3px);z-index:900;display:${showTimeSim?"flex":"none"};align-items:center;justify-content:center;padding:20px">
+    ${showTimeSim?renderTimeSimModal():""}
+  </div>
+
+  <div id="content">
+    <div class="scope-banner">
+      <div>
+        <div style="font-size:10px;color:#999;text-transform:uppercase;font-weight:700;letter-spacing:0.5px" class="${bnClass}">${t("scopeLabel")}</div>
+        <div style="font-size:14px;font-weight:800;color:#1a1a1a">${currentUser.scopeName}</div>
+      </div>
+      <div style="display:flex;gap:18px">
+        <div style="text-align:center"><div class="mono" style="font-size:18px;font-weight:800;color:#c8005e">${sstats.branches}</div><div style="font-size:9.5px;color:#999" class="${bnClass}">${t('branchesInScope')}</div></div>
+        <div style="text-align:center"><div class="mono" style="font-size:18px;font-weight:800;color:#c8005e">${sstats.cdos}</div><div style="font-size:9.5px;color:#999" class="${bnClass}">${t('cdosInScope')}</div></div>
+      </div>
+    </div>
+
+    <div class="stat-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
+      ${STAT_CARDS.map(c=>`
+        <div class="stat-card ${c.full?"full":""}" style="border-left-color:${c.border}${c.full?`;border-color:${c.border}`:""}">
+          <div class="stat-label ${bnClass}">${c.label}</div>
+          <div class="stat-num mono">${c.count}</div>
+        </div>`).join("")}
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+        <div class="panel-title ${bnClass}" style="margin-bottom:0">${t("filters")}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="search-input" placeholder="${lang==='en'?'Search client, VO, CDO…':'ক্লায়েন্ট, ভিও, সিডিও খুঁজুন...'}" value="${search}" style="width:220px" class="${bnClass}"/>
+          <button id="btn-clear" class="btn btn-outline btn-sm ${bnClass}">${t("clearFilters")}</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+        ${showDivision?`<div><label class="f-label ${bnClass}">${t('colDivision')}</label>
+          <select id="f-division" class="styled-select">${divisionOpts.map(v=>`<option value="${v}" ${filters.division===v?"selected":""}>${v==="All"?t('allOpt'):v}</option>`).join("")}</select>
+        </div>`:""}
+        ${showRegion?`<div><label class="f-label ${bnClass}">${t('colRegion')}</label>
+          <select id="f-region" class="styled-select">${regionOpts.map(v=>`<option value="${v}" ${filters.region===v?"selected":""}>${v==="All"?t('allOpt'):v}</option>`).join("")}</select>
+        </div>`:""}
+        ${showArea?`<div><label class="f-label ${bnClass}">${t('colArea')}</label>
+          <select id="f-area" class="styled-select">${areaOpts.map(v=>`<option value="${v}" ${filters.area===v?"selected":""}>${v==="All"?t('allOpt'):v}</option>`).join("")}</select>
+        </div>`:""}
+        <div><label class="f-label ${bnClass}">${t('branch')}</label>
+          <select id="f-branch" class="styled-select">${branchOpts.map(b=>`<option value="${b}" ${filters.branch===b?"selected":""}>${b==="All"?t('allOpt'):b}</option>`).join("")}</select>
+        </div>
+        <div><label class="f-label ${bnClass}">${t('cdoF')}</label>
+          <select id="f-cdo" class="styled-select">${cdoOpts.map(c=>`<option value="${c}" ${filters.cdo===c?"selected":""}>${c==="All"?t('allOpt'):c}</option>`).join("")}</select>
+        </div>
+        <div><label class="f-label ${bnClass}">${t('voCode')}</label>
+          <select id="f-voCode" class="styled-select">${voOpts.map(v=>`<option value="${v}" ${filters.voCode===v?"selected":""}>${v==="All"?t('allOpt'):v}</option>`).join("")}</select>
+        </div>
+        <div><label class="f-label ${bnClass}">${t('status')}</label>
+          <select id="f-status" class="styled-select">${statusOpts.map(s=>`<option value="${s}" ${filters.status===s?"selected":""}>${s==="All"?t('allOpt'):{newmiss:t('stNewMiss'),remiss:t('stRemiss'),partial:t('stPartial'),full:t('stFull'),grace:t('stGrace'),active:t('stActive')}[s]}</option>`).join("")}</select>
+        </div>
+        <div><label class="f-label ${bnClass}">${t('colProject')}</label>
+          <select id="f-project" class="styled-select">${projectOpts.map(p=>`<option value="${p}" ${filters.project===p?"selected":""}>${p==="All"?t('allOpt'):t('projectDabi')}</option>`).join("")}</select>
+        </div>
+        <div><label class="f-label ${bnClass}">${t('dateFrom')}</label><input type="date" id="f-dateFrom" value="${filters.dateFrom}"/></div>
+        <div><label class="f-label ${bnClass}">${t('dateTo')}</label><input type="date" id="f-dateTo" value="${filters.dateTo}"/></div>
+      </div>
+      ${(showDivision||showRegion||showArea)?`<div style="font-size:10px;color:#bbb;margin-top:10px" class="${bnClass}">${lang==='en'
+        ?`As ${roleLabel(currentUser.role)}, you can drill down from ${showDivision?'Division':showRegion?'Region':'Area'} downward.`
+        :`${roleLabel(currentUser.role)} হিসেবে আপনি ${showDivision?'বিভাগ':showRegion?'অঞ্চল':'এরিয়া'} থেকে নিচের দিকে ফিল্টার করতে পারবেন।`}</div>`:""}
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+        <span style="font-size:12px;color:#999" class="${bnClass}"><span class="mono">${filtered.length}</span> ${filtered.length!==1?t('records'):t('record')}</span>
+        <div style="display:flex;gap:8px">
+          <button id="btn-export-csv" class="btn btn-outline btn-sm">📄 ${t('exportCsv')}</button>
+          <button id="btn-export-excel" class="btn btn-outline btn-sm">📊 ${t('exportExcel')}</button>
+          <button id="btn-export-pdf" class="btn btn-primary btn-sm">🖨️ ${t('exportPdf')}</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th>${t('colVo')}</th><th>${t('colClientName')}</th><th>${t('colLoanId')}</th><th>${t('colCommit')}</th>
+            <th>${t('colDivision')}</th><th>${t('colRegion')}</th><th>${t('colArea')}</th><th>${t('colBranch')}</th>
+            <th>${t('colBranchCode')}</th><th>${t('colProjectCode')}</th><th>${t('colProject')}</th><th>${t('colCdo')}</th>
+            <th>${t('colClientNo')}</th><th>${t('colDisbDate')}</th><th>${t('colDisbAmt')}</th>
+            <th>${t('colTargetDate')}</th><th>${t('colSubmission')}</th><th>${t('colStatus')}</th><th>${t('colDue')}</th><th>${t('colReason')}</th><th>${t('colFollowUp')}</th>
+          </tr></thead>
+          <tbody>
+            ${paged.length===0?`<tr><td colspan="21" style="text-align:center;color:#bbb;padding:30px" class="${bnClass}">${t('noRecords')}</td></tr>`:""}
+            ${paged.map(r=>{
+              const st=getStatus(r); const due=r.targetAmount-getCollected(r);
+              return `<tr class="row-click" data-loan-id="${r.loanId}">
+                <td class="mono">${r.voCode}</td><td>${r.clientName}</td><td class="mono">${r.loanId}</td><td class="mono">${commitRangeStr(r)}</td>
+                <td>${r.division}</td><td>${r.region}</td><td>${r.area}</td><td>${r.branch}</td>
+                <td class="mono">${r.branchCode}</td><td class="mono">${r.projectCode}</td><td>${r.project==="Dabi"?t('projectDabi'):r.project}</td><td class="mono">${r.cdo}</td>
+                <td class="mono">${r.clientNo}</td><td class="mono">${fmtDate(r.disbursementDate)}</td><td class="mono">${fmt(r.disbursedAmount)}</td>
+                <td class="mono">${fmtDate(r.targetDate)}</td><td class="mono">${fmtDate(r.submissionDate)}</td><td>${statusChip(st)}</td><td class="mono">${st==="full"||st==="grace"?fmt(0):fmt(due)}</td>
+                <td>${r.reason?reasonDisplay(r.reason):"—"}</td>
+                <td>${r.followUp?`💬 ${fmtDate(r.followUp.date)}`:"—"}</td>
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+      ${totalPages>1?`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:11px;color:#999" class="${bnClass}">${t('perPage')}:</span>
+          ${[10,25,50,100].map(n=>`<button class="page-btn pg-size-btn ${perPage===n?"active":""}" data-n="${n}">${n}</button>`).join("")}
+        </div>
+        <div style="display:flex;gap:5px">
+          <button class="page-btn" id="pg-first" ${page===1?"disabled":""}>«</button>
+          <button class="page-btn" id="pg-prev" ${page===1?"disabled":""}>‹</button>
+          ${pageNums.map(n=>`<button class="page-btn pg-num ${page===n?"active":""}" data-n="${n}">${n}</button>`).join("")}
+          <button class="page-btn" id="pg-next" ${page===totalPages?"disabled":""}>›</button>
+          <button class="page-btn" id="pg-last" ${page===totalPages?"disabled":""}>»</button>
+        </div>
+      </div>`:""}
+    </div>
+  </div>
+
+  <div id="drawer-overlay" class="${drawerRow?"open":""}">
+    ${drawerRow?renderDrawer(drawerRow):""}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// TIME SIMULATOR
+// ══════════════════════════════════════════════════════════════
+function renderTimeSimModal(){
+  const bnClass=lang==="bn"?"bn":"";
+  const localVal = new Date(TODAY.getTime()-TODAY.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  return `
+  <div style="background:#fff;border-radius:18px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:1.5px;text-transform:uppercase" class="${bnClass}">${t('timeSimTitle')}</div>
+        <div style="color:#fff;font-size:15px;font-weight:700">${fmtDateTime(TODAY)}</div>
+      </div>
+      <button id="btn-close-timesim" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:10px;width:30px;height:30px;font-size:16px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:18px 20px 22px">
+      <div style="font-size:11px;color:#888;margin-bottom:16px;line-height:1.5" class="${bnClass}">${t('timeSimSub')}</div>
+      <label class="f-label ${bnClass}">${t('timeSimSetTo')}</label>
+      <input type="datetime-local" id="timesim-input" value="${localVal}" style="margin-bottom:14px"/>
+      <button id="btn-timesim-apply" class="btn btn-primary" style="width:100%;justify-content:center;background:linear-gradient(135deg,#1565c0,#42a5f5);margin-bottom:16px">${t('timeSimApply')}</button>
+      <div style="font-size:10px;color:#aaa;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:8px" class="${bnClass}">${t('timeSimQuickTitle')}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <button class="timesim-quick" data-days="1" style="background:#eef6ff;color:#1565c0;border:1.5px solid #90caf9;border-radius:9px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer" class="${bnClass}">${t('timeSimPlus1Day')}</button>
+        <button class="timesim-quick" data-days="7" style="background:#eef6ff;color:#1565c0;border:1.5px solid #90caf9;border-radius:9px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer" class="${bnClass}">${t('timeSimPlus1Week')}</button>
+        <button class="timesim-quick" data-days="30" style="background:#eef6ff;color:#1565c0;border:1.5px solid #90caf9;border-radius:9px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer" class="${bnClass}">${t('timeSimPlus1Month')}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// IMPORT — reads a CDO/BM app database export (.json) and maps its records into
+// this portal's Mirpur-2 branch, replacing the mock rows there. This is how the
+// portal shows real supervisee performance instead of separately-generated mock data.
+// ══════════════════════════════════════════════════════════════
+function mapImportedRow(r){
+  const branchInfo = ORG.branches["Mirpur-2"];
+  const areaInfo = ORG.areas[branchInfo.area];
+  return {
+    loanId: r.loanId,
+    division:"Dhaka Division", region:areaInfo.region, area:branchInfo.area, branch:"Mirpur-2",
+    branchCode:branchInfo.code, projectCode:branchInfo.project, project:"Progoti",
+    cdo:r.cdo, cdoName:r.cdoName, voCode:r.voCode,
+    clientNo:r.memberNo, clientName:r.memberName, phone:r.phone,
+    disbursementDate:r.disbursementDate, disbursedAmount:r.disbursedAmount,
+    targetDate:r.targetDate, targetAmount:r.targetAmount, submissionDate:r.submissionDate||"",
+    payments:r.payments||[], reason:r.reason||"", reasonNote:r.reasonNote||"",
+    commitmentFrom:r.commitmentFrom||"", commitmentTo:r.commitmentTo||"", commitmentHistory:r.commitmentHistory||[],
+    previousMisses:r.previousMisses||0, missedCommitmentCount:r.missedCommitmentCount||0, escalated:!!r.escalated,
+    remissLocked:!!r.remissLocked, lastCountedCommitmentTo:r.lastCountedCommitmentTo||"", remissHistory:r.remissHistory||[],
+    followUp:r.followUp||null,
+  };
+}
+function importCdoData(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const db=JSON.parse(e.target.result);
+      if(!db || !Array.isArray(db.data)) throw new Error("bad file");
+      const mapped = db.data.map(mapImportedRow);
+      DATA = DATA.filter(r=>r.branch!=="Mirpur-2").concat(mapped);
+      if(db.today) TODAY=new Date(db.today);
+      runTimeSweep();
+      page=1; drawerRow=null;
+      render();
+      toast(`${t("importSuccess")} (${mapped.length})`);
+    }catch(err){
+      toast(t("importFail"));
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ══════════════════════════════════════════════════════════════
+// DRAWER — record detail + Follow-up (AM/RM edit, PM/HO view-only)
+// ══════════════════════════════════════════════════════════════
+function renderDrawer(row){
+  const bnClass=lang==="bn"?"bn":"";
+  const st=getStatus(row);
+  const collected=getCollected(row);
+  const due=row.targetAmount-collected;
+  const editable=canEditFollowUp();
+  const fu=row.followUp;
+  return `
+  <div id="drawer">
+    <div style="background:linear-gradient(135deg,#c8005e,#e91e8c);padding:18px 20px;display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="color:rgba(255,255,255,0.7);font-size:10px;text-transform:uppercase;letter-spacing:1px" class="${bnClass}">${t('drawerTitle')}</div>
+        <div style="color:rgba(255,255,255,0.85);font-size:10.5px" class="mono">VO ${row.voCode}</div>
+        <div style="color:#fff;font-size:18px;font-weight:800">${row.clientName}</div>
+        <div style="color:rgba(255,255,255,0.85);font-size:11px;margin-top:2px" class="mono">${row.loanId} · ${row.branch} · ${row.cdo} (${row.cdoName})</div>
+      </div>
+      <button id="btn-close-drawer" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:9px;width:30px;height:30px;font-size:16px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:18px 20px">
+      <div style="margin-bottom:12px">${statusChip(st)}</div>
+      <div class="info-cell info-full" style="margin-bottom:8px">
+        <div class="info-label">${t('colCommit')}</div>
+        <div class="info-value mono">${commitRangeStr(row)}</div>
+      </div>
+      <div class="info-grid">
+        <div class="info-cell"><div class="info-label">${t('colDivision')}</div><div class="info-value">${row.division}</div></div>
+        <div class="info-cell"><div class="info-label">${t('colRegion')}</div><div class="info-value">${row.region}</div></div>
+        <div class="info-cell"><div class="info-label">${t('colArea')}</div><div class="info-value">${row.area}</div></div>
+        <div class="info-cell"><div class="info-label">${t('colBranch')}</div><div class="info-value">${row.branch} (${row.branchCode})</div></div>
+        <div class="info-cell"><div class="info-label">${t('colProjectCode')}</div><div class="info-value mono">${row.projectCode}</div></div>
+        <div class="info-cell"><div class="info-label">${t('colProject')}</div><div class="info-value">${row.project==="Dabi"?t('projectDabi'):row.project}</div></div>
+        <div class="info-cell"><div class="info-label">${t('disbursementDate')}</div><div class="info-value mono">${fmtDate(row.disbursementDate)}</div></div>
+        <div class="info-cell"><div class="info-label">${t('disbursedAmount')}</div><div class="info-value mono">${fmt(row.disbursedAmount)}</div></div>
+        <div class="info-cell"><div class="info-label">${t('colTargetDate')}</div><div class="info-value mono">${fmtDate(row.targetDate)}</div></div>
+        <div class="info-cell"><div class="info-label">${t('colSubmission')}</div><div class="info-value mono">${fmtDate(row.submissionDate)}</div></div>
+        <div class="info-cell"><div class="info-label">${t('installmentAmount')}</div><div class="info-value mono">${fmt(row.targetAmount)}</div></div>
+        <div class="info-cell"><div class="info-label">${t('colDue')}</div><div class="info-value mono" style="color:${due>0?'#c8005e':'#2e7d32'}">${st==='full'||st==='grace'?fmt(0):fmt(due)}</div></div>
+        <div class="info-cell info-full">
+          <div class="info-label">${t('reasonLabel')}</div>
+          <div class="info-value">${row.reason?reasonDisplay(row.reason):`<span style="color:#e53935">${t('notSelected')}</span>`}</div>
+        </div>
+        <div class="info-cell info-full"><div class="info-label">${t('phone')}</div><div class="info-value mono">${row.phone}</div></div>
+        ${row.payments.length?`
+        <div class="info-cell info-full">
+          <div class="info-label" style="margin-bottom:6px">${t('payHistory')}</div>
+          ${row.payments.map(p=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span class="mono">${fmtDate(p.date)}</span><span class="mono" style="font-weight:700;color:#2e7d32">${fmt(p.amount)}</span></div>`).join("")}
+        </div>`:""}
+      </div>
+
+      <div style="background:#eef6ff;border:1px solid #bbdefb;border-radius:10px;padding:12px;margin-top:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${fu?"6px":"0"}">
+          <div class="info-label" style="color:#1565c0">${t('followUp')}</div>
+          ${editable?`<button id="btn-add-fu" class="btn btn-primary btn-sm" style="background:linear-gradient(135deg,#1565c0,#42a5f5)">${fu?"✏️":t('addFollowUp')}</button>`:""}
+        </div>
+        ${!fuEditing?(fu?`
+          <div style="font-size:12px;color:#222;margin-bottom:3px"><b class="mono">${fmtDate(fu.date)}</b></div>
+          <div style="font-size:12px;color:#444;line-height:1.4;margin-bottom:4px" class="${bnClass}">${fu.comment}</div>
+          <div style="font-size:10px;color:#888" class="${bnClass}">${t('followUpBy')} ${fu.by}</div>
+        `:`<div style="font-size:11px;color:#90a4c4" class="${bnClass}">${t('noFollowUp')}</div>`):`
+          <div style="margin-bottom:10px">
+            <label class="f-label" style="color:#1565c0">${t('followUpDate')}</label>
+            <input type="date" id="fu-date" value="${fu?fu.date:''}"/>
+          </div>
+          <div style="margin-bottom:10px">
+            <label class="f-label" style="color:#1565c0">${t('followUpComment')}</label>
+            <textarea id="fu-comment" rows="3" style="width:100%;border:1.5px solid #90caf9;border-radius:8px;padding:8px">${fu?fu.comment:''}</textarea>
+          </div>
+          <button id="btn-save-fu" class="btn btn-primary btn-sm" style="background:linear-gradient(135deg,#1565c0,#42a5f5);width:100%;justify-content:center">${t('saveFollowUp')}</button>
+        `}
+        ${!editable?`<div style="font-size:9.5px;color:#90a4c4;margin-top:8px" class="${bnClass}">${t('viewOnlyFollowUp')}</div>`:""}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXPORTS — FR-21
+// ══════════════════════════════════════════════════════════════
+function exportRows(){ return getFiltered(); }
+function exportHeaders(){
+  return ["VO","Client Name","Loan No.","Commitment Date","Division","Region","Area","Branch","Branch Code","Project Code","Project",
+    "CDO","Client No","Disbursement Date","Disbursement Amount","VO Collection Date","Submission Date","Status","Due Amount","Reason","Follow-up Date","Follow-up Comment"];
+}
+function exportRowArray(r){
+  const st=getStatus(r); const due=r.targetAmount-getCollected(r);
+  return [r.voCode,r.clientName,r.loanId,commitRangeStr(r),r.division,r.region,r.area,r.branch,r.branchCode,r.projectCode,r.project,
+    r.cdo,r.clientNo,r.disbursementDate,r.disbursedAmount,r.targetDate,r.submissionDate||"",st,(st==="full"||st==="grace")?0:due,r.reason||"",
+    r.followUp?r.followUp.date:"", r.followUp?r.followUp.comment:""];
+}
+function downloadBlob(content,filename,mime){
+  const blob=new Blob([content],{type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
+}
+function exportCsv(){
+  const rows=exportRows();
+  const lines=[exportHeaders().join(",")];
+  rows.forEach(r=>{
+    lines.push(exportRowArray(r).map(v=>`"${String(v).replace(/"/g,'""')}"`).join(","));
+  });
+  downloadBlob(lines.join("\n"), `schedule-miss-register-${currentUser.scopeName.replace(/\s+/g,"_")}.csv`, "text/csv");
+  toast(lang==="en"?"✅ CSV exported":"✅ সিএসভি এক্সপোর্ট হয়েছে");
+}
+function exportExcel(){
+  if(typeof XLSX==="undefined"){ toast("Excel library unavailable in this environment"); return; }
+  const rows=exportRows();
+  const data=[exportHeaders(), ...rows.map(exportRowArray)];
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Schedule Miss Register");
+  XLSX.writeFile(wb, `schedule-miss-register-${currentUser.scopeName.replace(/\s+/g,"_")}.xlsx`);
+  toast(lang==="en"?"✅ Excel exported":"✅ এক্সেল এক্সপোর্ট হয়েছে");
+}
+function exportPdf(){
+  const rows=exportRows();
+  const w=window.open("","_blank");
+  const headers=exportHeaders();
+  w.document.write(`
+    <html><head><title>Schedule Miss Register — ${currentUser.scopeName}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:20px;font-size:10px}
+      h1{font-size:16px;color:#c8005e;margin-bottom:2px} p{color:#666;margin-bottom:14px;font-size:11px}
+      table{width:100%;border-collapse:collapse} th,td{border:1px solid #ddd;padding:5px 7px;text-align:left;white-space:nowrap}
+      th{background:#fce4ec;color:#c8005e}
+    </style></head><body>
+    <h1>Schedule Miss Register</h1>
+    <p>Scope: ${currentUser.scopeName} — ${roleLabel(currentUser.role)} — Generated ${new Date().toLocaleString()}</p>
+    <table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>
+      ${rows.map(r=>`<tr>${exportRowArray(r).map(v=>`<td>${v}</td>`).join("")}</tr>`).join("")}
+    </tbody></table>
+    <script>window.onload=()=>window.print();<\/script>
+    </body></html>
+  `);
+  w.document.close();
+}
+
+// ══════════════════════════════════════════════════════════════
+// EVENTS
+// ══════════════════════════════════════════════════════════════
+function bindApp(){
+  const $=id=>document.getElementById(id);
+  if($("btn-lang")) $("btn-lang").onclick=()=>{ lang=lang==="en"?"bn":"en"; render(); };
+
+  // Import CDO/BM data
+  if($("btn-import-cdo")) $("btn-import-cdo").onclick=()=>{ $("import-cdo-file")?.click(); };
+  if($("import-cdo-file")) $("import-cdo-file").onchange=e=>{
+    const file=e.target.files&&e.target.files[0];
+    if(file) importCdoData(file);
+  };
+
+  // Time Simulator
+  if($("btn-timesim")) $("btn-timesim").onclick=()=>{ showTimeSim=true; render(); };
+  if($("btn-close-timesim")) $("btn-close-timesim").onclick=()=>{ showTimeSim=false; render(); };
+  const mo=$("modal-overlay"); if(mo) mo.onclick=e=>{ if(e.target===mo){ showTimeSim=false; render(); } };
+  if($("btn-timesim-apply")) $("btn-timesim-apply").onclick=()=>{
+    const val=$("timesim-input")?.value;
+    if(!val) return;
+    TODAY=new Date(val);
+    runTimeSweep();
+    showTimeSim=false;
+    render();
+    toast(`✅ ${fmtDateTime(TODAY)}`);
+  };
+  document.querySelectorAll(".timesim-quick").forEach(b=>{
+    b.onclick=()=>{
+      const days=parseInt(b.dataset.days);
+      TODAY=new Date(TODAY.getTime()+days*86400000);
+      runTimeSweep();
+      showTimeSim=false;
+      render();
+      toast(`✅ +${days}d — ${fmtDateTime(TODAY)}`);
+    };
+  });
+  if($("btn-logout")) $("btn-logout").onclick=()=>{
+    currentUser=null; search=""; filters={division:"All",region:"All",area:"All",branch:"All",cdo:"All",voCode:"All",status:"All",project:"All",dateFrom:"",dateTo:""};
+    page=1; drawerRow=null; render();
+  };
+  if($("search-input")) $("search-input").oninput=e=>{ search=e.target.value; page=1; render(); };
+  if($("btn-clear")) $("btn-clear").onclick=()=>{
+    search=""; filters={division:"All",region:"All",area:"All",branch:"All",cdo:"All",voCode:"All",status:"All",project:"All",dateFrom:"",dateTo:""}; page=1; render();
+  };
+  const bindSel=(id,key,resetKeys)=>{ const el=$(id); if(el) el.onchange=e=>{ filters[key]=e.target.value; (resetKeys||[]).forEach(k=>filters[k]="All"); page=1; render(); }; };
+  bindSel("f-division","division",["region","area","branch","cdo","voCode"]);
+  bindSel("f-region","region",["area","branch","cdo","voCode"]);
+  bindSel("f-area","area",["branch","cdo","voCode"]);
+  bindSel("f-branch","branch",["cdo","voCode"]);
+  bindSel("f-cdo","cdo",["voCode"]);
+  bindSel("f-voCode","voCode"); bindSel("f-status","status"); bindSel("f-project","project");
+  bindSel("f-dateFrom","dateFrom"); bindSel("f-dateTo","dateTo");
+
+  document.querySelectorAll(".pg-size-btn").forEach(b=>{ b.onclick=()=>{ perPage=parseInt(b.dataset.n); page=1; render(); }; });
+  document.querySelectorAll(".pg-num").forEach(b=>{ b.onclick=()=>{ page=parseInt(b.dataset.n); render(); }; });
+  if($("pg-first")) $("pg-first").onclick=()=>{ page=1; render(); };
+  if($("pg-prev")) $("pg-prev").onclick=()=>{ page=Math.max(1,page-1); render(); };
+  if($("pg-next")) $("pg-next").onclick=()=>{ const f=getFiltered(); page=Math.min(Math.ceil(f.length/perPage)||1,page+1); render(); };
+  if($("pg-last")) $("pg-last").onclick=()=>{ const f=getFiltered(); page=Math.ceil(f.length/perPage)||1; render(); };
+
+  document.querySelectorAll(".row-click").forEach(tr=>{
+    tr.onclick=()=>{ const loanId=tr.dataset.loanId; drawerRow=DATA.find(r=>r.loanId===loanId)||null; fuEditing=false; render(); };
+  });
+  if($("btn-close-drawer")) $("btn-close-drawer").onclick=()=>{ drawerRow=null; fuEditing=false; render(); };
+  const ov=$("drawer-overlay"); if(ov) ov.onclick=e=>{ if(e.target===ov){ drawerRow=null; fuEditing=false; render(); } };
+  if($("btn-add-fu")) $("btn-add-fu").onclick=()=>{ fuEditing=true; render(); };
+  if($("btn-save-fu")) $("btn-save-fu").onclick=()=>{
+    const date=$("fu-date")?.value||"", comment=$("fu-comment")?.value||"";
+    if(!date||!comment){ toast(t("fillRequired")); return; }
+    const row=DATA.find(r=>r.loanId===drawerRow.loanId);
+    row.followUp={date,comment,by:currentUser.name,at:new Date().toISOString()};
+    fuEditing=false; drawerRow=row; render();
+    toast(t("savedFollowUp"));
+  };
+
+  if($("btn-export-csv")) $("btn-export-csv").onclick=exportCsv;
+  if($("btn-export-excel")) $("btn-export-excel").onclick=exportExcel;
+  if($("btn-export-pdf")) $("btn-export-pdf").onclick=exportPdf;
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tetris</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; color: #e2e8f0; font: 13px/1.45 system-ui, "Segoe UI", sans-serif; overflow: hidden; }
+  .wrap { height: 100%; display: flex; flex-direction: column; }
+  .demo-bar { background: #0f172a; padding: 8px 14px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; flex: none; }
+  .demo-bar b { color: #38bdf8; font-size: 11px; letter-spacing: .08em; }
+  .demo-bar kbd { font: 12px ui-monospace, Consolas, monospace; background: #1e293b; border: 1px solid #334155; border-radius: 5px; padding: 0 6px; color: #f8fafc; }
+  .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 8px; }
+  canvas { height: 100%; max-width: 100%; aspect-ratio: 768 / 1024; object-fit: contain; image-rendering: pixelated; outline: none; cursor: crosshair; }
+  .pad { display: none; flex: none; justify-content: center; gap: 8px; padding: 8px 8px 12px; }
+  .pad button { width: 58px; height: 46px; border-radius: 12px; border: 1px solid #334155; background: #111827; color: #f1f5f9; font: 700 16px system-ui, sans-serif; }
+  .pad button:active { background: #1e293b; }
+  @media (hover: none) { .pad { display: flex; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo-bar">
+    <b>DEMO</b>
+    <span>PyOpenGL game ported line for line to a canvas.</span>
+    <span><kbd>A</kbd> <kbd>D</kbd> move · <kbd>W</kbd> rotate · <kbd>S</kbd> drop</span>
+    <span>Top icons: ◁ reset · ‖ pause · ✕ quit</span>
+  </div>
+  <div class="stage"><canvas id="game" tabindex="0" aria-label="Tetris game. A and D move, W rotates, S drops."></canvas></div>
+  <div class="pad" aria-label="Touch controls">
+    <button type="button" data-key="a" aria-label="Move left">◀</button>
+    <button type="button" data-key="w" aria-label="Rotate">⟳</button>
+    <button type="button" data-key="s" aria-label="Drop">▼</button>
+    <button type="button" data-key="d" aria-label="Move right">▶</button>
+    <button type="button" data-key="pause" aria-label="Pause">‖</button>
+  </div>
+</div>
+<script src="tetris.js"></script>
+</body>
+</html>

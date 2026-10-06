@@ -1,0 +1,2307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BRAC Schedule Miss Register — CDO &amp; BM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  body{font-family:'Noto Sans Bengali','DM Sans',sans-serif;background:#f7f0f5;min-height:100vh}
+  select,textarea,input,button{font-family:inherit}
+  select{-webkit-appearance:none;appearance:none}
+  .bn{font-family:'Noto Sans Bengali','DM Sans',sans-serif}
+  .mono{font-family:'DM Mono','DM Sans',sans-serif!important}
+
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.08}}
+  @keyframes blinkBlue{0%,100%{opacity:1;color:#1565c0}50%{opacity:0.15;color:#1565c0}}
+  .wb{animation:blink 1s ease-in-out infinite;display:inline-block}
+  .wbr{animation:blinkRed 0.9s ease-in-out infinite;display:inline-block;color:#c62828}
+
+  .status-swatch{width:13px;height:13px;flex-shrink:0;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
+
+  .card{border-radius:14px;border:1.5px solid;border-left:5px solid;margin-bottom:9px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+  .card-full   {background:#e8f5e9;border-color:#66bb6a33;border-left-color:#2e7d32}
+  .card-partial{background:#fffde7;border-color:#f9a82555;border-left-color:#f9a825}
+  .card-remiss {background:#ffcdd2;border-color:#7f000055;border-left-color:#7f0000}
+  .card-newmiss{background:#fce4f5;border-color:#d500a066;border-left-color:#d500a0}
+  .card-grace  {background:#f3e5f5;border-color:#ab47bc88;border-left-color:#7b1fa2}
+  .card-active {background:#ffffff;border-color:#e0d0ee;  border-left-color:#8a8a8a}
+
+  .card-header{display:grid;grid-template-columns:30px 1fr auto 18px;align-items:center;gap:0 10px;padding:10px 12px;min-height:70px;cursor:pointer}
+  .quick-icon-btn{width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0}
+  .quick-call{background:linear-gradient(135deg,#c8005e,#e91e8c)}
+  .quick-sms{background:linear-gradient(135deg,#7b1fa2,#ab47bc)}
+  .cdo-line{font-size:9.5px;color:#8a5a75;font-weight:700;margin-top:2px}
+  .card-body{border-top:1px dashed #e8d8f0;padding:14px 12px 16px}
+
+  .sl-badge{background:#d6006e;color:#fff;border-radius:7px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;font-family:'DM Mono',sans-serif}
+  .member-name{font-weight:700;font-size:14px;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 44px);font-family:'Noto Sans Bengali','DM Sans',sans-serif}
+  .vo-pill{background:#444;color:#fff;border-radius:5px;padding:1px 6px;font-size:10px;font-weight:600;font-family:'DM Mono',sans-serif}
+  .cdo-pill{background:#fce4ec;color:#c8005e;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:700;font-family:'DM Mono',sans-serif}
+
+  .expand-arrow{color:#c8005e;font-size:16px;font-weight:700;flex-shrink:0}
+
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .info-cell{background:rgba(255,255,255,0.78);border-radius:8px;padding:8px 9px}
+  .info-label{font-size:9px;color:#d6006e;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;font-family:'Noto Sans Bengali','DM Sans',sans-serif}
+  .info-value{font-size:13px;font-weight:600;color:#222;font-family:'DM Mono','DM Sans',sans-serif}
+  .info-full{grid-column:1 / -1}
+
+  .btn-primary{width:100%;background:linear-gradient(135deg,#c8005e,#e91e8c);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(200,0,94,0.25)}
+  .btn-secondary{width:100%;background:#fff;color:#7b1fa2;border:2px solid #7b1fa244;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btn-ghost{background:none;border:none;color:#999;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit}
+
+  .styled-select{width:100%;border:2px solid #e91e8c33;border-radius:10px;padding:8px 30px 8px 10px;font-size:12px;background:#fdf5f9;color:#222;cursor:pointer;outline:none;appearance:none}
+  .select-wrap{position:relative}
+  .select-wrap::after{content:"▾";position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:12px;color:#d6006e;pointer-events:none}
+  input[type=date],input[type=text],input[type=number],input[type=tel],textarea{width:100%;box-sizing:border-box;border:2px solid #e91e8c33;border-radius:10px;padding:9px 10px;font-size:13px;background:#fdf5f9;outline:none}
+  textarea{resize:vertical}
+  label.f-label{font-size:11px;font-weight:700;color:#d6006e;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:6px}
+
+  #app-header{background:linear-gradient(135deg,#c8005e 0%,#e91e8c 55%,#c2185b 100%);box-shadow:0 4px 20px rgba(200,0,94,0.35);position:sticky;top:0;z-index:100}
+  .header-inner{max-width:1100px;margin:0 auto;padding:14px 14px 0}
+
+  .panel{background:#fff;border-bottom:1px solid #f0e0f0;box-shadow:0 3px 12px rgba(200,0,94,0.08)}
+  .panel-inner{max-width:1100px;margin:0 auto;padding:12px 14px 14px}
+  .panel-title{font-size:10px;font-weight:800;color:#d6006e;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+
+  #overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:flex-end;justify-content:center}
+  #overlay.open{display:flex}
+  #edit-sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:92vh;overflow-y:auto}
+
+  .popup{position:absolute;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid #f0e0f0;z-index:201}
+
+  .page-btn{background:#fce4ec;color:#d6006e;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;font-size:13px;font-family:'DM Mono',sans-serif}
+  .page-btn:disabled{background:#ececec;color:#ccc;cursor:default}
+  .page-btn.active{background:#d6006e;color:#fff}
+
+  /* bottom tab bar */
+  #tabbar{position:sticky;bottom:0;background:#fff;border-top:1px solid #f0e0f0;display:flex;box-shadow:0 -3px 14px rgba(0,0,0,0.06);z-index:90}
+  .tab-btn{flex:1;background:none;border:none;padding:9px 4px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:#bbb;font-size:10px;font-weight:700}
+  .tab-btn.active{color:#d6006e}
+  .tab-btn svg{width:20px;height:20px}
+
+  /* role badge */
+  .role-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700}
+
+  /* login */
+  #login-wrap{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:28px 26px;background:linear-gradient(160deg,#c8005e 0%,#7b1fa2 100%)}
+  .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid #fff;background:transparent}
+  .pin-dot.filled{background:#fff}
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
+  .key-btn{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:#fff;border-radius:14px;padding:16px 0;font-size:18px;font-weight:700;cursor:pointer}
+  .key-btn:active{background:rgba(255,255,255,0.28)}
+  .demo-chip{background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);color:#fff;border-radius:10px;padding:9px 12px;font-size:11px;cursor:pointer;text-align:left;width:100%;margin-bottom:8px}
+  .demo-chip b{display:block;font-size:12.5px;margin-bottom:1px}
+
+  /* escalation badge */
+  .esc-badge{background:#b71c1c;color:#fff;border-radius:6px;padding:2px 7px;font-size:9px;font-weight:800;display:inline-flex;align-items:center;gap:3px}
+
+  /* toast */
+  #toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:30px;font-size:12.5px;font-weight:600;z-index:1200;box-shadow:0 6px 20px rgba(0,0,0,0.3);display:none;max-width:88%;text-align:center}
+  #toast.show{display:block}
+
+  html{height:100%}
+  body{display:flex;justify-content:center;align-items:flex-start;background:#b08aaf;min-height:100vh;overflow:hidden;padding:0}
+  #mobile-shell{width:100%;max-width:430px;height:100vh;overflow-y:auto;overflow-x:hidden;background:#f7f0f5;box-shadow:0 0 60px rgba(80,0,60,0.35);position:relative;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
+  #overlay{position:fixed}
+  #page-content{flex:1}
+
+  .fab{position:fixed;left:50%;transform:translateX(calc(-50% + 155px));bottom:72px;background:linear-gradient(135deg,#c8005e,#e91e8c);color:#fff;border:none;border-radius:16px;width:52px;height:52px;box-shadow:0 6px 18px rgba(200,0,94,0.45);cursor:pointer;font-size:24px;z-index:95;display:flex;align-items:center;justify-content:center}
+  @media (max-width:430px){.fab{transform:none;right:16px;left:auto}}
+</style>
+</head>
+<body>
+<div id="mobile-shell"><div id="root"></div></div>
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// i18n
+// ══════════════════════════════════════════════════════════════
+const T = {
+  en: {
+    appSub:"BRAC Microfinance", appTitle:"Schedule Miss Register",
+    searchPlh:"Search name, ID or VO…", legend:"Legend",
+    total:"Total", remiss:"Re-miss", full:"Full", partial:"Partial", newmiss:"New Miss", grace:"Grace", active:"Active",
+    records:"records", record:"record", noRecords:"No records found",
+    lgNewMiss:"New Schedule Miss", lgRemiss:"Missed Commitment Date (Re-miss)",
+    lgNoNext:"Commitment Date Not Set", lgReasonNotSet:"Reason Not Set",
+    lgPartial:"Partial Collection", lgFull:"Full Collection", lgGrace:"Grace Period", lgActive:"Active (Unclassified)",
+    stFull:"Full Collection", stPartial:"Partial Collection", stRemiss:"Re-miss (Missed Commitment Date)",
+    stActive:"Active (Unclassified)", stNewMiss:"New Schedule Miss", stGrace:"Grace Period",
+    voCode:"VO Code", status:"Status", reason:"Reason", targetDate:"VO Collection Date",
+    colDate:"Collection Date", nextCol:"Commitment Date", allOpt:"All",
+    targetDateL:"VO Collection Date", targetAmt:"Installment Amount", colDateL:"Last Collection Date",
+    latestPay:"Last Collection Date", collected:"Collection This Month", cumCollected:"Collection This Month",
+    disbursementDate:"Disbursement Date", disbursedAmount:"Disbursed Amount",
+    outstanding:"Due", nextColDate:"Commitment Date", reasonLabel:"Reason for Schedule Miss",
+    notSelected:"⚠️ Not yet selected", phone:"Phone", call:"Call", sms:"SMS", payHistory:"Payment History",
+    gracePeriod:"Grace Period", voColDate:"VO Collection Date",
+    graceNote:"Loan disbursed within 15 days of VO Collection Date",
+    paidLabel:"✓ Paid", editRecord:"Edit Record",
+    reasonReq:"Reason for Schedule Miss *", selectReason:"— Select Reason —",
+    pleaseSelect:"⚠️ Please select a reason", specifyReason:"Specify Reason (max 200 characters)",
+    descReason:"Describe the reason…", nextColLabel:"Commitment Date *",
+    defaultNote:"Default: 3 working days from last collection", saveBtn:"💾 Save Changes",
+    editBtn:"✏️ Edit Reason / Commitment Date", memberName:"Member Name", memberNo:"Member No.",
+    voCodeL:"VO Code", targetDateR:"VO Collection Date", targetAmtR:"Installment Amount",
+    outstanding2:"Due", phoneR:"Phone",
+    perPage:"Per page", notifications:"Notifications", noNotif:"No new notifications",
+    dashTab:"Dashboard", registerTab:"Register", alertsTab:"Alerts", profileTab:"Profile",
+    manualModeNote:"⚠ ERP sync not yet available in this build — client, loan &amp; disbursement data is entered manually by the CDO.",
+    newMissBtn:"+ New Schedule Miss",
+    regTitle:"Register New Schedule Miss", regSub:"Manually enter data that would normally sync from ERP",
+    voSel:"VO Code / Village Organization *", memberSel:"Member Name *", memberNoF:"Member Number *",
+    phoneF:"Phone Number *", disbF:"Disbursement Date *", disbAmtF:"Disbursed Amount (৳) *",
+    targetDateF:"VO Collection Date (Date of Miss) *", targetAmtF:"Installment Amount (৳) *",
+    loanCycleF:"Loan Cycle", submitReg:"Save Record", cancelReg:"Cancel",
+    graceAutoNote:"Pre-filled from the loan's typical tenure — edit it to test Grace Period (set it within the last 15 days).",
+    regSaved:"✅ New Schedule Miss record created", fillRequired:"⚠️ Please fill all required fields",
+    followUp:"Follow-up (Supervisory)", addFollowUp:"+ Add Follow-up", followUpDate:"Follow-up Date",
+    followUpComment:"Follow-up Comment", saveFollowUp:"Save Follow-up", followUpBy:"by",
+    noFollowUp:"No follow-up recorded yet", readOnlyNote:"🔒 Read-only — only the CDO can edit Reason / Commitment Date",
+    branchView:"Branch Consolidated View", filterByCdo:"CDO", allCdos:"All CDOs",
+    escalated:"ACTION REQUIRED", escalatedNote:"2+ missed commitment dates — escalated to supervisor",
+    logout:"Log Out", loginTitle:"DCS Login", loginSub:"Enter your Staff PIN",
+    demoUsers:"Demo accounts", cdoRole:"CDO", bmRole:"Branch Manager", loginErr:"Invalid PIN — try a demo account below",
+    commitHistory:"Commitment Date History", clearFilters:"Clear All", applyFilters:"Apply", followUpStatus:"Follow-up Status",
+    fuPending:"Pending", fuCompleted:"Completed", fuOverdue:"Overdue", fuAny:"All",
+    welcomeBack:"Welcome", branchLabel:"Branch",
+    updateBtn:"🔄 Update Reason / Commitment Date", updateRecord:"Update Record",
+    historyBtn:"🕘 History", historyTitle:"Loan History", missedCount:"Re-miss Count", totalPaidHist:"Total Collected",
+    noHistory:"No commitment dates missed on this loan yet.", histStatusFull:"Full Collection", histStatusPartial:"Partial Collection", histStatusMissed:"Missed (No Collection)",
+    histMonth:"Month", histDue:"Due", histPaid:"Paid", remissHistTitle:"Re-miss History", histCommitDate:"Commitment Date", noPayments:"No payments recorded yet.",
+    recordCollectionBtn:"💰 Record Collection", recordCollectionTitle:"Record Collection", collectionDateF:"Collection Date *", amountCollectedF:"Amount Collected (৳) *",
+    newCommitRequired:"This won't fully clear the due amount — a new Commitment Date range is required to continue the cycle.",
+    newCommitDateF:"New Commitment From *", newCommitToF:"New Commitment To *", saveCollection:"💾 Save Collection", fullyResolvedNote:"✅ This will fully resolve the schedule miss.",
+    deleteComment:"🗑️ Delete", confirmDelete:"Delete this comment?", confirmYes:"Yes, Delete", confirmCancel:"Cancel", commentDeleted:"Follow-up comment deleted",
+    partialReasonF:"Reason for Partial Collection *",
+    fullMiss:"Full miss", commitFromF:"Commitment From *", commitToF:"Commitment To *",
+    todayCommitOnly:"Today's Commitments Only", remarksF:"Remarks", remarksReqNote:"Remarks are required when \"Other\" is selected as the reason.",
+    timeSimTitle:"Time Simulator", timeSimSub:"Move the app's simulated \"today\" forward to test grace periods, commitment dates, and escalation without waiting real days.",
+    timeSimSetTo:"Set date &amp; time to", timeSimApply:"Apply", timeSimQuickTitle:"Quick advance", timeSimPlus1Day:"+1 Day", timeSimPlus1Week:"+1 Week", timeSimPlus1Month:"+1 Month",
+    timeSimBtn:"🕐 Simulate Time", dbMenuTitle:"Database", exportDbBtn:"Export Database (.json)", importDbBtn:"Import Database", resetDbBtn:"Reset to Seed Data",
+    resetDbConfirm:"Reset all data to the original seed dataset? This cannot be undone.", graceDaysF:"Grace Period Duration (days) *",
+    graceDueChangeOnly:"Grace Period collection — only the due amount changes, nothing else.",
+    graceDropNote:"No payment tracking during Grace Period. If this window ends without a Full Collection, the record is simply dropped — no further action needed.",
+    grEndsIn:"ends in", grDaysLeft:"days", grExpired:"Grace period ended", viewBtn:"View",
+  },
+  bn: {
+    appSub:"ব্র্যাক মাইক্রোফাইন্যান্স", appTitle:"সিডিউল মিস রেজিস্টার",
+    searchPlh:"নাম, আইডি বা ভিও দিয়ে খুঁজুন…", legend:"বিবরণ",
+    total:"মোট", remiss:"রি-মিস", full:"সম্পূর্ণ", partial:"আংশিক", newmiss:"নতুন মিস", grace:"গ্রেস", active:"সক্রিয়",
+    records:"রেকর্ড", record:"রেকর্ড", noRecords:"কোনো রেকর্ড পাওয়া যায়নি",
+    lgNewMiss:"নতুন সিডিউল মিস", lgRemiss:"কমিটমেন্ট তারিখ মিস (রি-মিস)",
+    lgNoNext:"কমিটমেন্ট তারিখ নির্ধারণ করা হয়নি", lgReasonNotSet:"কারণ নির্ধারণ করা হয়নি",
+    lgPartial:"আংশিক আদায়", lgFull:"সম্পূর্ণ আদায়", lgGrace:"গ্রেস পিরিয়ড", lgActive:"সক্রিয় (অশ্রেণীবদ্ধ)",
+    stFull:"সম্পূর্ণ আদায়", stPartial:"আংশিক আদায়", stRemiss:"রি-মিস (কমিটমেন্ট তারিখ মিস)",
+    stActive:"সক্রিয় (অশ্রেণীবদ্ধ)", stNewMiss:"নতুন সিডিউল মিস", stGrace:"গ্রেস পিরিয়ড",
+    voCode:"ভিও কোড", status:"অবস্থা", reason:"কারণ", targetDate:"ভিও সংগ্রহ তারিখ",
+    colDate:"সংগ্রহ তারিখ", nextCol:"কমিটমেন্ট তারিখ", allOpt:"সব",
+    targetDateL:"ভিও সংগ্রহ তারিখ", targetAmt:"কিস্তির পরিমাণ", colDateL:"সর্বশেষ সংগ্রহ তারিখ",
+    latestPay:"সর্বশেষ সংগ্রহ তারিখ", collected:"চলতি মাসে মোট আদায়", cumCollected:"চলতি মাসে মোট আদায়",
+    disbursementDate:"বিতরণের তারিখ", disbursedAmount:"বিতরণকৃত পরিমাণ",
+    outstanding:"বকেয়া", nextColDate:"কমিটমেন্ট তারিখ", reasonLabel:"সিডিউল মিসের কারণ",
+    notSelected:"⚠️ নির্বাচন করা হয়নি", phone:"ফোন", call:"কল", sms:"এসএমএস", payHistory:"আদায়ের ইতিহাস",
+    gracePeriod:"গ্রেস পিরিয়ড", voColDate:"ভিও সংগ্রহ তারিখ",
+    graceNote:"ভিও সংগ্রহ তারিখের ১৫ দিনের মধ্যে ঋণ বিতরণ",
+    paidLabel:"✓ পরিশোধিত", editRecord:"রেকর্ড পরিবর্তন",
+    reasonReq:"সিডিউল মিসের কারণ *", selectReason:"— কারণ বেছে নিন —",
+    pleaseSelect:"⚠️ একটি কারণ নির্বাচন করুন", specifyReason:"কারণ উল্লেখ করুন (সর্বোচ্চ ২০০ অক্ষর)",
+    descReason:"বিস্তারিত লিখুন…", nextColLabel:"কমিটমেন্ট তারিখ *",
+    defaultNote:"ডিফল্ট: সর্বশেষ আদায় থেকে ৩ কার্যদিবস", saveBtn:"💾 সংরক্ষণ করুন",
+    editBtn:"✏️ কারণ / কমিটমেন্ট তারিখ পরিবর্তন", memberName:"সদস্যের নাম", memberNo:"সদস্য নং",
+    voCodeL:"ভিও কোড", targetDateR:"ভিও সংগ্রহ তারিখ", targetAmtR:"কিস্তির পরিমাণ",
+    outstanding2:"বকেয়া", phoneR:"ফোন",
+    perPage:"প্রতি পৃষ্ঠা", notifications:"বিজ্ঞপ্তি", noNotif:"কোনো বিজ্ঞপ্তি নেই",
+    dashTab:"ড্যাশবোর্ড", registerTab:"রেজিস্টার", alertsTab:"সতর্কতা", profileTab:"প্রোফাইল",
+    manualModeNote:"⚠ এই সংস্করণে ইআরপি সিঙ্ক এখনও উপলব্ধ নয় — সিডিও কর্তৃক তথ্য ম্যানুয়ালি প্রবেশ করানো হয়।",
+    newMissBtn:"+ নতুন সিডিউল মিস",
+    regTitle:"নতুন সিডিউল মিস রেজিস্টার করুন", regSub:"ইআরপি থেকে সাধারণত সিঙ্ক হওয়া তথ্য ম্যানুয়ালি লিখুন",
+    voSel:"ভিও কোড / ভিলেজ অর্গানাইজেশন *", memberSel:"সদস্যের নাম *", memberNoF:"সদস্য নম্বর *",
+    phoneF:"ফোন নম্বর *", disbF:"বিতরণের তারিখ *", disbAmtF:"বিতরণকৃত পরিমাণ (৳) *",
+    targetDateF:"ভিও সংগ্রহ তারিখ (মিসের তারিখ) *", targetAmtF:"কিস্তির পরিমাণ (৳) *",
+    loanCycleF:"ঋণ চক্র", submitReg:"সংরক্ষণ করুন", cancelReg:"বাতিল",
+    graceAutoNote:"ঋণের সাধারণ মেয়াদ থেকে পূর্ব-পূরণকৃত — গ্রেস পিরিয়ড পরীক্ষা করতে এটি পরিবর্তন করুন (গত ১৫ দিনের মধ্যে নির্ধারণ করুন)।",
+    regSaved:"✅ নতুন সিডিউল মিস রেকর্ড তৈরি হয়েছে", fillRequired:"⚠️ সকল আবশ্যক তথ্য পূরণ করুন",
+    followUp:"ফলো-আপ (সুপারভাইজরি)", addFollowUp:"+ ফলো-আপ যোগ করুন", followUpDate:"ফলো-আপ তারিখ",
+    followUpComment:"ফলো-আপ মন্তব্য", saveFollowUp:"ফলো-আপ সংরক্ষণ করুন", followUpBy:"কর্তৃক",
+    noFollowUp:"এখনো কোনো ফলো-আপ নেই", readOnlyNote:"🔒 শুধুমাত্র পঠনযোগ্য — শুধুমাত্র সিডিও কারণ/কমিটমেন্ট তারিখ পরিবর্তন করতে পারবেন",
+    branchView:"শাখা সমন্বিত দৃশ্য", filterByCdo:"সিডিও", allCdos:"সকল সিডিও",
+    escalated:"পদক্ষেপ প্রয়োজন", escalatedNote:"২+ বার কমিটমেন্ট তারিখ মিস — সুপারভাইজরের কাছে এস্কেলেটেড",
+    logout:"লগ আউট", loginTitle:"ডিসিএস লগইন", loginSub:"আপনার স্টাফ পিন লিখুন",
+    demoUsers:"ডেমো অ্যাকাউন্ট", cdoRole:"সিডিও", bmRole:"ব্রাঞ্চ ম্যানেজার", loginErr:"ভুল পিন — নিচের ডেমো অ্যাকাউন্ট ব্যবহার করুন",
+    commitHistory:"কমিটমেন্ট তারিখের ইতিহাস", clearFilters:"সব মুছুন", applyFilters:"প্রয়োগ করুন", followUpStatus:"ফলো-আপ অবস্থা",
+    fuPending:"অপেক্ষমান", fuCompleted:"সম্পন্ন", fuOverdue:"বকেয়া", fuAny:"সব",
+    welcomeBack:"স্বাগতম", branchLabel:"শাখা",
+    updateBtn:"🔄 কারণ / কমিটমেন্ট তারিখ আপডেট করুন", updateRecord:"রেকর্ড আপডেট করুন",
+    historyBtn:"🕘 ইতিহাস", historyTitle:"ঋণের ইতিহাস", missedCount:"রি-মিস সংখ্যা", totalPaidHist:"মোট আদায়",
+    noHistory:"এই ঋণে এখনো কোনো কমিটমেন্ট তারিখ মিস হয়নি।", histStatusFull:"সম্পূর্ণ আদায়", histStatusPartial:"আংশিক আদায়", histStatusMissed:"মিসড (কোনো আদায় হয়নি)",
+    histMonth:"মাস", histDue:"বকেয়া", histPaid:"পরিশোধিত", remissHistTitle:"রি-মিস ইতিহাস", histCommitDate:"কমিটমেন্ট তারিখ", noPayments:"এখনো কোনো আদায় রেকর্ড করা হয়নি।",
+    recordCollectionBtn:"💰 আদায় রেকর্ড করুন", recordCollectionTitle:"আদায় রেকর্ড করুন", collectionDateF:"আদায়ের তারিখ *", amountCollectedF:"আদায়কৃত পরিমাণ (৳) *",
+    newCommitRequired:"এটি সম্পূর্ণ বকেয়া পরিশোধ করবে না — চক্র চালিয়ে যেতে একটি নতুন কমিটমেন্ট তারিখের পরিসীমা প্রয়োজন।",
+    newCommitDateF:"নতুন কমিটমেন্ট শুরু *", newCommitToF:"নতুন কমিটমেন্ট শেষ *", saveCollection:"💾 আদায় সংরক্ষণ করুন", fullyResolvedNote:"✅ এটি সিডিউল মিস সম্পূর্ণরূপে সমাধান করবে।",
+    deleteComment:"🗑️ মুছুন", confirmDelete:"এই মন্তব্যটি মুছবেন?", confirmYes:"হ্যাঁ, মুছুন", confirmCancel:"বাতিল", commentDeleted:"ফলো-আপ মন্তব্য মুছে ফেলা হয়েছে",
+    partialReasonF:"আংশিক আদায়ের কারণ *",
+    fullMiss:"সম্পূর্ণ মিস", commitFromF:"কমিটমেন্ট শুরু *", commitToF:"কমিটমেন্ট শেষ *",
+    todayCommitOnly:"শুধুমাত্র আজকের কমিটমেন্ট", remarksF:"মন্তব্য", remarksReqNote:"কারণ হিসেবে \"অন্যান্য\" নির্বাচন করা হলে মন্তব্য আবশ্যক।",
+    timeSimTitle:"টাইম সিমুলেটর", timeSimSub:"গ্রেস পিরিয়ড, কমিটমেন্ট তারিখ এবং এস্কেলেশন পরীক্ষা করতে বাস্তব দিন অপেক্ষা না করে অ্যাপের সিমুলেটেড \"আজ\" এগিয়ে নিন।",
+    timeSimSetTo:"তারিখ ও সময় নির্ধারণ করুন", timeSimApply:"প্রয়োগ করুন", timeSimQuickTitle:"দ্রুত এগিয়ে যান", timeSimPlus1Day:"+১ দিন", timeSimPlus1Week:"+১ সপ্তাহ", timeSimPlus1Month:"+১ মাস",
+    timeSimBtn:"🕐 সময় সিমুলেট করুন", dbMenuTitle:"ডেটাবেস", exportDbBtn:"ডেটাবেস এক্সপোর্ট (.json)", importDbBtn:"ডেটাবেস আমদানি", resetDbBtn:"মূল ডেটাতে রিসেট করুন",
+    resetDbConfirm:"সমস্ত ডেটা মূল সীড ডেটাসেটে রিসেট করবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।", graceDaysF:"গ্রেস পিরিয়ডের মেয়াদ (দিন) *",
+    graceDueChangeOnly:"গ্রেস পিরিয়ড আদায় — শুধুমাত্র বকেয়া পরিমাণ পরিবর্তন হবে, আর কিছু নয়।",
+    graceDropNote:"গ্রেস পিরিয়ড চলাকালীন কোনো আদায় ট্র্যাক করা হয় না। এই মেয়াদ সম্পূর্ণ আদায় ছাড়া শেষ হলে, রেকর্ডটি স্বয়ংক্রিয়ভাবে বাদ দেওয়া হবে — আর কোনো পদক্ষেপের প্রয়োজন নেই।",
+    grEndsIn:"শেষ হবে", grDaysLeft:"দিনে", grExpired:"গ্রেস পিরিয়ড শেষ হয়েছে", viewBtn:"দেখুন",
+  },
+};
+function t(k){return (T[lang]&&T[lang][k])||k;}
+
+// ══════════════════════════════════════════════════════════════
+// Constants
+// ══════════════════════════════════════════════════════════════
+const REASON_KEYS = ["Insufficient Fund","Business/Income Issue","Client Unavailable","Migration","Family Issue","Illness/Emergency","Natural Disaster","Other"];
+const REASONS_BN  = ["অপর্যাপ্ত তহবিল","ব্যবসা/আয়ের সমস্যা","ক্লায়েন্ট অনুপস্থিত","স্থানান্তর","পারিবারিক সমস্যা","অসুস্থতা/জরুরি অবস্থা","প্রাকৃতিক দুর্যোগ","অন্যান্য"];
+const VO_CODES    = ["2035","2036","2037","2038","2039","2040"];
+let TODAY         = new Date("2025-04-15T09:00:00"); // simulated "now" — mutable via the Time Simulator
+function nowStr(){ return TODAY.toISOString(); }
+function nowDateStr(){ return TODAY.toISOString().split("T")[0]; }
+const BRANCH      = "Mirpur-2 Branch";
+const BRANCH_BN   = "মিরপুর-২ শাখা";
+
+const USERS = {
+  "1234":{role:"cdo", name:"Rima Aktar",    nameBn:"রিমা আক্তার",    cdoId:"CDO-014", branch:BRANCH, branchBn:BRANCH_BN},
+  "5678":{role:"cdo", name:"Shirin Akter",  nameBn:"শিরিন আক্তার",  cdoId:"CDO-021", branch:BRANCH, branchBn:BRANCH_BN},
+  "9999":{role:"bm",  name:"Kamal Hossain", nameBn:"কামাল হোসেন",   cdoId:null,      branch:BRANCH, branchBn:BRANCH_BN, title:"Branch Manager"},
+};
+
+// ══════════════════════════════════════════════════════════════
+// Helpers
+// ══════════════════════════════════════════════════════════════
+function addWorkingDays(dateStr,n){
+  if(!dateStr)return"";
+  let d=new Date(dateStr),count=0;
+  while(count<n){d.setDate(d.getDate()+1);if(d.getDay()!==0&&d.getDay()!==6)count++;}
+  return d.toISOString().split("T")[0];
+}
+const daysDiff    = d=>d?Math.floor((TODAY-new Date(d))/86400000):null;
+const getCollected= row=>row.payments.reduce((s,p)=>s+p.amount,0);
+const getLatest   = row=>!row.payments.length?"":([...row.payments].sort((a,b)=>new Date(b.date)-new Date(a.date))[0].date);
+const fmt         = n=>"৳"+Number(n||0).toLocaleString("en-IN");
+const fmtDate     = d=>d?new Date(d).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}):"—";
+const fmtDateTime = d=>d?new Date(d).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
+const commitRangeStr = row=>(row.commitmentFrom&&row.commitmentTo)?`${fmtDate(row.commitmentFrom)} – ${fmtDate(row.commitmentTo)}`:"—";
+// Grace period is purely a function of Disbursement Date vs "today" — no manual toggle.
+// Day 0-14 since disbursement (15 calendar days) = Grace Period. Day 15-29 = normal tracking
+// (reason/commitment apply as usual). From day 30 onward (15 days of Grace + 15 more) the
+// record is simply dropped.
+function daysSinceDisbursement(row){
+  return row.disbursementDate ? Math.floor((TODAY-new Date(row.disbursementDate))/86400000) : null;
+}
+// Same calculation, for a raw date string (used to live-preview Grace Period on the Register form).
+function daysSinceRegDisb(dateStr){
+  return dateStr ? Math.floor((TODAY-new Date(dateStr))/86400000) : null;
+}
+// Whether the Register form's current Disbursement Date would classify as Grace Period —
+// drives the auto-selected Yes/No tiles and whether Miss Information is shown at all.
+function regFormIsGrace(){
+  const d=daysSinceRegDisb(regForm.disbursementDate);
+  return d!==null && d>=0 && d<15;
+}
+function isGraceActive(row){
+  const d=daysSinceDisbursement(row);
+  return d!==null && d>=0 && d<15;
+}
+function graceEndDate(row){
+  if(!row.disbursementDate) return null;
+  const end=new Date(row.disbursementDate); end.setDate(end.getDate()+15); return end;
+}
+function graceDaysLeft(row){
+  const end=graceEndDate(row);
+  if(!end) return 0;
+  return Math.max(0, Math.ceil((end-TODAY)/86400000));
+}
+function isDroppable(row){
+  const d=daysSinceDisbursement(row);
+  if(d===null || d<30) return false;
+  // The 30-day drop only clears out loans that sat idle the whole time — no collection ever
+  // recorded, no commitment ever missed, and (crucially) no commitment currently pending. A
+  // record with any of that — a payment, a missed commitment on file, or a Commitment Date
+  // range that just hasn't come due yet — is an established, ongoing case and is never
+  // dropped by this rule; it persists exactly as before, resolved only by a Full Collection.
+  if(getCollected(row)>0 || row.remissLocked || (row.missedCommitmentCount||0)>0) return false;
+  if(row.commitmentTo && new Date(row.commitmentTo)>=TODAY) return false;
+  return true;
+}
+
+// Status classification engine — strictly per BRD FR-03..FR-08, extended for the grace
+// countdown and the sticky Re-miss tag.
+// Precedence: Grace(while active) > Full(FR-03) > Re-miss(FR-07, sticky) > Partial(FR-06) > New(FR-05) > Active(FR-08)
+function getStatus(row){
+  if(isGraceActive(row)) return "grace";
+  const c=getCollected(row);
+  if(c>=row.targetAmount) return "full";
+  // Sticky: once a commitment range has passed unresolved, the record stays tagged
+  // Re-miss — it does NOT clear just because a new (not-yet-due) commitment range is set.
+  // Only a Full Collection clears it.
+  if(row.remissLocked) return "remiss";
+  if(c>0) return "partial";
+  if(!row.previousMisses || row.previousMisses===0) return "newmiss";
+  return "active";
+}
+// Reason and Commitment Date (now a range) are mandatory everywhere a record is created or
+// updated, so a record can never be left without either — nothing to flag here anymore.
+
+// Runs whenever TODAY moves (via the Time Simulator) or DATA is freshly loaded.
+// Two things happen here, in this order:
+//  1. Any commitment range whose end date has newly passed unresolved (non-grace) is
+//     detected and its consequences applied automatically — Re-miss lock, history entry,
+//     escalation. This runs FIRST so a row that has just become a genuine Re-miss case is
+//     never mistaken for an idle loan by step 2 on this same pass.
+//  2. Any record more than 30 days past its Disbursement Date (15 days of Grace Period +
+//     15 more days) that never had any activity is simply dropped — no further action needed.
+// Returns the number of records dropped, so callers can surface it if useful.
+function runTimeSweep(){
+  DATA.forEach(row=>{
+    if(getCollected(row)>=row.targetAmount) return; // already resolved
+    if(isGraceActive(row)) return;                   // still inside an active grace window
+    if(!row.commitmentTo) return;                     // nothing promised yet, nothing to miss
+    if(new Date(row.commitmentTo) >= TODAY) return;    // not due yet
+    if(row.lastCountedCommitmentTo === row.commitmentTo) return; // already counted this one
+    const collectedNow = getCollected(row);
+    row.missedCommitmentCount = (row.missedCommitmentCount||0) + 1;
+    row.remissLocked = true;
+    row.remissHistory = row.remissHistory||[];
+    row.remissHistory.push({
+      commitmentFrom: row.commitmentFrom, commitmentTo: row.commitmentTo,
+      detectedAt: nowStr(),
+      outcome: collectedNow>0 ? "partial" : "missed",
+      dueAtTime: row.targetAmount - collectedNow,
+      reason: row.reason||"",
+    });
+    row.lastCountedCommitmentTo = row.commitmentTo;
+    if(row.missedCommitmentCount>=2) row.escalated=true;
+  });
+
+  const before=DATA.length;
+  DATA = DATA.filter(row=>!isDroppable(row)); // idle >30 days since disbursement — drop it
+  return before-DATA.length;
+}
+
+// Real Re-miss history + payment trail for a loan — no synthetic data. missedCommitmentCount
+// and remissHistory are the persisted record of every cycle the runTimeSweep()/Record Collection
+// flow ever detected as missed, and payments is the full collection trail, partial or full — all
+// of it stays in the record even after eventual Full Collection ("stays in his/her history").
+function loanHistoryStats(row){
+  return {
+    missedCount: row.missedCommitmentCount||0,
+    totalPaid: getCollected(row),
+  };
+}
+
+function reasonDisplay(key){
+  const idx=REASON_KEYS.indexOf(key);
+  return idx>=0?(lang==="bn"?REASONS_BN[idx]:key):key;
+}
+
+function pushLog(row,action){
+  row.auditLog=row.auditLog||[];
+  row.auditLog.unshift({action, by:currentUser.name, at:nowStr()});
+}
+
+// Urgency ordering for the "Recent Schedule Miss" overview preview
+function urgencyRank(row){
+  if(row.escalated) return 0;
+  const st=getStatus(row);
+  if(st==="remiss") return 1;
+  if(st==="newmiss") return 2;
+  if(st==="partial") return 3;
+  if(st==="active") return 4;
+  if(st==="grace") return 5;
+  return 6; // full
+}
+function sortByUrgency(rows){
+  return [...rows].sort((a,b)=> urgencyRank(a)-urgencyRank(b) || (b.loanId>a.loanId?1:-1) );
+}
+// Full Collection records are never archived — they just sort to the end of the list,
+// everything else keeps its natural (insertion) order.
+function sortFullLast(rows){
+  return [...rows].sort((a,b)=>{
+    const af=getStatus(a)==="full"?1:0, bf=getStatus(b)==="full"?1:0;
+    return af-bf;
+  });
+}
+
+function toast(msg){
+  const el=document.getElementById("toast");
+  if(!el)return;
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(window.__toastT);
+  window.__toastT=setTimeout(()=>el.classList.remove("show"),2600);
+}
+
+// ══════════════════════════════════════════════════════════════
+// Data — in-memory JSON "DB" (mock ERP-sourced + manually registered)
+// ══════════════════════════════════════════════════════════════
+const NAME_POOL = ["Rabeya Khatun","Abdul Karim","Fatima Begum","Ruhul Amin","Jamila Begum","Merjun Begum","Hasena Akter","Bilkis Khanom","Nasrin Begum","Kamrun Sultana","Roksana Begum","Momtaz Begum","Lovely Akter","Jahanara Banu","Kohinur Bibi","Amena Parvin","Salma Khanom","Zarina Akter","Nurjahan Begum","Hafiza Khanom","Asma Sultana","Parveen Bibi","Dilruba Khanom","Rokeya Begum","Sumaiya Akter","Farzana Begum","Marium Banu","Shahnaz Akter","Razia Sultana","Kamrun Bibi","Monira Khanom","Laila Parvin","Halima Banu","Kohinur Akter","Saleha Begum","Rahema Akter","Rekha Sultana","Jharna Akter","Fatema Khanom","Shefali Akter","Rupa Khanom","Lima Parvin","Tania Bibi","Nipa Banu","Shila Sultana","Sabeha Begum","Rokeya Parvin","Saleha Akter","Nargis Sultana","Ratna Khanom"];
+let __nameIdx=0;
+function nextName(){return NAME_POOL[__nameIdx++ % NAME_POOL.length];}
+
+const PHONE_PREFIXES=["017","018","019","016","013","015"];
+function makePhone(sl){const p=PHONE_PREFIXES[sl%PHONE_PREFIXES.length];const m=String((sl*7919+4321)%100).padStart(2,"0");const l=String(Math.abs((sl*6271+8765)%1000000)).padStart(6,"0");return p+m+"-"+l;}
+
+// Loan catalog — mimics loans already on file (as if synced earlier / onboarded),
+// so the CDO selects the loan rather than retyping disbursement data by hand.
+const LOAN_CATALOG = [
+  {id:"L001", label:"Microfinance Loan - L001", disbursedAmount:150000, installment:19000, monthsAgo:3},
+  {id:"L002", label:"Agriculture Loan - L002",  disbursedAmount:200000, installment:23750, monthsAgo:4},
+  {id:"L003", label:"Small Enterprise Loan - L003", disbursedAmount:250000, installment:28500, monthsAgo:2},
+];
+function loanById(id){ return LOAN_CATALOG.find(l=>l.id===id); }
+
+const CDO_IDS = ["CDO-014","CDO-021"];
+function cdoFor(sl){ return CDO_IDS[sl%2]; }
+function cdoName(id){ return id==="CDO-014"?"Rima Aktar":"Shirin Akter"; }
+
+let __seq=0;     // internal counter for phone/CDO/member-number assignment during generation only
+let __loanSeq=0; // persistent counter behind the real primary key — survives across saves/loads
+function genLoanId(){ __loanSeq++; return "LN-"+String(__loanSeq).padStart(5,"0"); }
+
+function mkRow(opts){
+  __seq++;
+  const voCode = opts.voCode || VO_CODES[__seq % VO_CODES.length];
+  const cdoId = cdoFor(__seq);
+  return Object.assign({
+    loanId: genLoanId(), // primary key — unique per loan instance, so one member can hold several
+    cdo:cdoId, cdoName:cdoName(cdoId), branch:BRANCH,
+    voCode, memberNo:String(100+__seq), memberName:nextName(), phone:makePhone(__seq),
+    disbursementDate:"2025-01-10", disbursedAmount:150000, // Grace Period is derived from this — see isGraceActive()
+    targetDate:"2025-04-10", targetAmount:19000,
+    payments:[], reason:"", reasonNote:"",
+    commitmentFrom:"", commitmentTo:"", commitmentHistory:[], // commitment is a date range, not a single date
+    previousMisses:0, missedCommitmentCount:0, escalated:false,
+    loanCycle:1,
+    remissLocked:false, lastCountedCommitmentTo:"", remissHistory:[], // sticky Re-miss + full audit trail
+    followUp:null, auditLog:[], submissionDate:"", // date the CDO entered this record
+  }, opts);
+}
+const p=(d,a)=>({date:d,amount:a});
+
+function generateData(){
+  const rows=[];
+
+  // ── FULL COLLECTION (5) ──
+  rows.push(mkRow({voCode:"2035",targetAmount:19000,payments:[p("2025-04-08",19000)],reason:"Business/Income Issue",previousMisses:0}));
+  rows.push(mkRow({voCode:"2036",targetAmount:23750,payments:[p("2025-04-03",10800),p("2025-04-09",12950)],reason:"Illness/Emergency",previousMisses:1}));
+  rows.push(mkRow({voCode:"2037",targetAmount:14250,payments:[p("2025-04-05",14250)],reason:"Migration",previousMisses:0}));
+  rows.push(mkRow({voCode:"2038",targetAmount:28500,payments:[p("2025-04-04",14250),p("2025-04-11",14250)],reason:"Natural Disaster",previousMisses:0}));
+  rows.push(mkRow({voCode:"2039",targetAmount:19000,payments:[p("2025-04-07",19000)],reason:"Family Issue",previousMisses:1}));
+
+  // ── GRACE PERIOD (5) — Grace Period is auto-derived from Disbursement Date vs "today"
+  // (TODAY is 2025-04-15 here), so these just need a recent disbursement — no manual flag.
+  rows.push(mkRow({voCode:"2038",targetAmount:19000,targetDate:"2025-04-14",disbursementDate:"2025-04-01"}));
+  rows.push(mkRow({voCode:"2039",targetAmount:23750,targetDate:"2025-04-16",disbursementDate:"2025-04-03"}));
+  rows.push(mkRow({voCode:"2035",targetAmount:14250,targetDate:"2025-04-18",disbursementDate:"2025-04-05"}));
+  rows.push(mkRow({voCode:"2040",targetAmount:28500,targetDate:"2025-04-20",disbursementDate:"2025-04-08"}));
+  rows.push(mkRow({voCode:"2036",targetAmount:19000,targetDate:"2025-04-22",disbursementDate:"2025-04-10"}));
+
+  // ── NEW SCHEDULE MISS (6) — previousMisses=0, no collection yet. Reason and a Commitment
+  // Date range are mandatory from registration onward, so these carry both — the range is
+  // simply still upcoming (not yet due), which is what keeps them "New" instead of "Re-miss".
+  // Disbursement dates are set 16-30 days before TODAY: recent enough that the loan is a
+  // realistic first-miss case, but past the 15-day Grace window so status shows "New Miss".
+  rows.push(mkRow({voCode:"2035",targetAmount:19000,targetDate:"2025-04-12",disbursementDate:"2025-03-24",previousMisses:0,reason:"Insufficient Fund",commitmentFrom:"2025-04-17",commitmentTo:"2025-04-19"}));
+  rows.push(mkRow({voCode:"2036",targetAmount:14250,targetDate:"2025-04-11",disbursementDate:"2025-03-22",previousMisses:0,reason:"Client Unavailable",commitmentFrom:"2025-04-18",commitmentTo:"2025-04-20"}));
+  rows.push(mkRow({voCode:"2037",targetAmount:23750,targetDate:"2025-04-13",disbursementDate:"2025-03-25",previousMisses:0,reason:"Migration",commitmentFrom:"2025-04-19",commitmentTo:"2025-04-21"}));
+  rows.push(mkRow({voCode:"2038",targetAmount:19000,targetDate:"2025-04-09",disbursementDate:"2025-03-20",previousMisses:0,reason:"Illness/Emergency",commitmentFrom:"2025-04-20",commitmentTo:"2025-04-22"}));
+  rows.push(mkRow({voCode:"2039",targetAmount:28500,targetDate:"2025-04-14",disbursementDate:"2025-03-27",previousMisses:0,reason:"Family Issue",commitmentFrom:"2025-04-21",commitmentTo:"2025-04-23"}));
+  rows.push(mkRow({voCode:"2040",targetAmount:14250,targetDate:"2025-04-10",disbursementDate:"2025-03-21",previousMisses:0,reason:"Natural Disaster",commitmentFrom:"2025-04-15",commitmentTo:"2025-04-15"}));
+
+  // ── PARTIAL COLLECTION (6) — some collected, less than installment. Reason + an upcoming
+  // Commitment Date range are always set (mandatory), same as New Schedule Miss above.
+  rows.push(mkRow({voCode:"2035",targetAmount:23750,payments:[p("2025-04-08",9500)],reason:"Illness/Emergency",previousMisses:0,commitmentFrom:"2025-04-17",commitmentTo:"2025-04-19"}));
+  rows.push(mkRow({voCode:"2036",targetAmount:19000,payments:[p("2025-04-06",8450)],reason:"Business/Income Issue",previousMisses:1,commitmentFrom:"2025-04-18",commitmentTo:"2025-04-20"}));
+  rows.push(mkRow({voCode:"2037",targetAmount:14250,payments:[p("2025-04-09",7100)],reason:"Client Unavailable",previousMisses:0,commitmentFrom:"2025-04-19",commitmentTo:"2025-04-21"}));
+  rows.push(mkRow({voCode:"2038",targetAmount:19000,payments:[p("2025-04-07",7600)],reason:"Natural Disaster",previousMisses:0,commitmentFrom:"2025-04-20",commitmentTo:"2025-04-22"}));
+  rows.push(mkRow({voCode:"2039",targetAmount:28500,payments:[p("2025-04-05",11400)],reason:"Family Issue",previousMisses:2,commitmentFrom:"2025-04-21",commitmentTo:"2025-04-23"}));
+  rows.push(mkRow({voCode:"2040",targetAmount:19000,payments:[p("2025-04-03",7600),p("2025-04-10",3800)],reason:"Insufficient Fund",previousMisses:0,commitmentFrom:"2025-04-15",commitmentTo:"2025-04-16"}));
+
+  // ── RE-MISS (6) — commitment range previously set & its end date already passed, still
+  // short. The 4 single-miss rows are left for the boot-time sweep to detect naturally
+  // (consistent with how it'll behave going forward); the 2 escalated rows keep their
+  // pre-existing history pre-seeded directly, since they represent a 2nd miss that already
+  // happened before "today".
+  rows.push(mkRow({voCode:"2035",targetAmount:19000,payments:[],reason:"Business/Income Issue",commitmentFrom:"2025-03-24",commitmentTo:"2025-03-28",commitmentHistory:[{from:"2025-03-16",to:"2025-03-20",setOn:"2025-03-15"},{from:"2025-03-24",to:"2025-03-28",setOn:"2025-03-21"}],previousMisses:1}));
+  rows.push(mkRow({voCode:"2036",targetAmount:14250,payments:[],reason:"Illness/Emergency",commitmentFrom:"2025-03-26",commitmentTo:"2025-03-30",commitmentHistory:[{from:"2025-03-26",to:"2025-03-30",setOn:"2025-03-22"}],previousMisses:1}));
+  rows.push(mkRow({voCode:"2037",targetAmount:28500,payments:[p("2025-04-02",9500)],reason:"Migration",commitmentFrom:"2025-03-29",commitmentTo:"2025-04-02",commitmentHistory:[{from:"2025-03-14",to:"2025-03-18",setOn:"2025-03-10"},{from:"2025-03-29",to:"2025-04-02",setOn:"2025-03-19"}],previousMisses:2,missedCommitmentCount:2,escalated:true,
+    remissLocked:true, lastCountedCommitmentTo:"2025-04-02",
+    remissHistory:[
+      {commitmentFrom:"2025-03-14",commitmentTo:"2025-03-18",detectedAt:"2025-03-19T09:00:00",outcome:"missed",dueAtTime:28500,reason:"Migration"},
+      {commitmentFrom:"2025-03-29",commitmentTo:"2025-04-02",detectedAt:"2025-04-03T09:00:00",outcome:"partial",dueAtTime:19000,reason:"Migration"},
+    ]}));
+  rows.push(mkRow({voCode:"2038",targetAmount:23750,payments:[],reason:"Other",reasonNote:"Land dispute with neighbor",commitmentFrom:"2025-03-21",commitmentTo:"2025-03-25",commitmentHistory:[{from:"2025-03-08",to:"2025-03-12",setOn:"2025-03-05"},{from:"2025-03-21",to:"2025-03-25",setOn:"2025-03-13"}],previousMisses:2,missedCommitmentCount:2,escalated:true,
+    remissLocked:true, lastCountedCommitmentTo:"2025-03-25",
+    remissHistory:[
+      {commitmentFrom:"2025-03-08",commitmentTo:"2025-03-12",detectedAt:"2025-03-13T09:00:00",outcome:"missed",dueAtTime:23750,reason:"Other"},
+      {commitmentFrom:"2025-03-21",commitmentTo:"2025-03-25",detectedAt:"2025-03-26T09:00:00",outcome:"missed",dueAtTime:23750,reason:"Other"},
+    ],
+    followUp:{date:"2025-04-16",comment:"Visited household — client requests 1 more week, husband hospitalised.",by:"Kamal Hossain",at:"2025-04-14T10:20:00Z"}}));
+  rows.push(mkRow({voCode:"2039",targetAmount:19000,payments:[],reason:"Natural Disaster",commitmentFrom:"2025-03-18",commitmentTo:"2025-03-22",commitmentHistory:[{from:"2025-03-18",to:"2025-03-22",setOn:"2025-03-14"}],previousMisses:1}));
+  rows.push(mkRow({voCode:"2040",targetAmount:33250,payments:[p("2025-04-01",14250)],reason:"Business/Income Issue",commitmentFrom:"2025-03-11",commitmentTo:"2025-03-15",commitmentHistory:[{from:"2025-03-11",to:"2025-03-15",setOn:"2025-03-08"}],previousMisses:1,
+    followUp:{date:"2025-04-11",comment:"Called client — partial payment promised by 20 Apr.",by:"Kamal Hossain",at:"2025-04-10T09:05:00Z"}}));
+
+  // ── ACTIVE / UNCLASSIFIED (6) — repeat context, zero collected this cycle. Reason + an
+  // upcoming Commitment Date range are set (mandatory); the range being still in the future
+  // is what keeps these "Active" instead of immediately re-missing. Disbursement dates are
+  // kept within the last 30 days (see isDroppable) since these rows have no payments or
+  // remiss history of their own yet to otherwise exempt them from the idle-loan drop.
+  rows.push(mkRow({voCode:"2035",targetAmount:19000,targetDate:"2025-04-13",disbursementDate:"2025-03-23",previousMisses:1,reason:"Business/Income Issue",commitmentFrom:"2025-04-17",commitmentTo:"2025-04-20"}));
+  rows.push(mkRow({voCode:"2036",targetAmount:23750,targetDate:"2025-04-12",disbursementDate:"2025-03-21",previousMisses:2,reason:"Migration",commitmentFrom:"2025-04-18",commitmentTo:"2025-04-21"}));
+  rows.push(mkRow({voCode:"2037",targetAmount:14250,targetDate:"2025-04-14",disbursementDate:"2025-03-26",previousMisses:1,reason:"Family Issue",commitmentFrom:"2025-04-19",commitmentTo:"2025-04-22"}));
+  rows.push(mkRow({voCode:"2038",targetAmount:28500,targetDate:"2025-04-11",disbursementDate:"2025-03-19",previousMisses:3,reason:"Other",reasonNote:"Client relocated temporarily for work",commitmentFrom:"2025-04-20",commitmentTo:"2025-04-23"}));
+  rows.push(mkRow({voCode:"2039",targetAmount:19000,targetDate:"2025-04-10",disbursementDate:"2025-03-28",previousMisses:1,reason:"Illness/Emergency",commitmentFrom:"2025-04-21",commitmentTo:"2025-04-24"}));
+  rows.push(mkRow({voCode:"2040",targetAmount:23750,targetDate:"2025-04-13",disbursementDate:"2025-03-20",previousMisses:1,reason:"Insufficient Fund",commitmentFrom:"2025-04-15",commitmentTo:"2025-04-17"}));
+
+  return rows;
+}
+
+// ══════════════════════════════════════════════════════════════
+// App state
+// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+// JSON "database" — auto-saved to browser storage on every change,
+// plus explicit Export/Import to a real .json file on demand.
+// ══════════════════════════════════════════════════════════════
+const DB_KEY = "brac_smr_db_v1";
+function saveDB(){
+  try{
+    localStorage.setItem(DB_KEY, JSON.stringify({
+      version:1, today:TODAY.toISOString(), loanSeq:__loanSeq, notifSeq:__notifId,
+      data:DATA, notifications:NOTIFICATIONS,
+    }));
+  }catch(e){ console.warn("DB save failed", e); }
+}
+function loadDB(){
+  try{
+    const raw=localStorage.getItem(DB_KEY);
+    if(!raw) return false;
+    const db=JSON.parse(raw);
+    if(!db || !Array.isArray(db.data)) return false;
+    TODAY = new Date(db.today);
+    __loanSeq = db.loanSeq||0;
+    __notifId = db.notifSeq||0;
+    DATA = db.data;
+    NOTIFICATIONS = db.notifications||[];
+    return true;
+  }catch(e){ console.warn("DB load failed", e); return false; }
+}
+function exportDB(){
+  const payload = JSON.stringify({
+    version:1, today:TODAY.toISOString(), loanSeq:__loanSeq, notifSeq:__notifId,
+    data:DATA, notifications:NOTIFICATIONS,
+  }, null, 2);
+  const blob=new Blob([payload],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download="schedule-miss-db.json";
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
+}
+function importDBFromFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const db=JSON.parse(e.target.result);
+      if(!db || !Array.isArray(db.data)) throw new Error("bad file");
+      TODAY = new Date(db.today);
+      __loanSeq = db.loanSeq||0;
+      __notifId = db.notifSeq||0;
+      DATA = db.data;
+      NOTIFICATIONS = db.notifications||[];
+      saveDB();
+      currentUser=null; // back to login for a clean, unambiguous reload of the new dataset
+      showMenu=false; showNotif=false; showTimeSim=false;
+      render();
+      toast(lang==="en"?"✅ Database imported":"✅ ডেটাবেস আমদানি হয়েছে");
+    }catch(err){
+      toast(lang==="en"?"⚠️ Invalid database file":"⚠️ অবৈধ ডেটাবেস ফাইল");
+    }
+  };
+  reader.readAsText(file);
+}
+function resetDB(){
+  localStorage.removeItem(DB_KEY);
+  __seq=0; __loanSeq=0; __notifId=0; __nameIdx=0;
+  TODAY = new Date("2025-04-15T09:00:00");
+  DATA = generateData();
+  NOTIFICATIONS = [];
+  DATA.filter(r=>r.followUp).forEach(r=>{
+    notifyCdoOfComment(r, r.followUp.by, r.followUp.comment);
+    NOTIFICATIONS[0].read = true;
+    NOTIFICATIONS[0].at = r.followUp.at;
+  });
+  runTimeSweep();
+  saveDB();
+}
+
+let DATA, NOTIFICATIONS = [], __notifId = 0;
+function notifyCdoOfComment(row, byName, comment){
+  __notifId++;
+  NOTIFICATIONS.unshift({
+    id:__notifId, loanId:row.loanId, toCdoId:row.cdo, memberName:row.memberName,
+    message:comment, byName, at:nowStr(), read:false,
+  });
+}
+let currentUser = null;   // {role,name,cdoId,branch,...}
+let lang = "en";
+let activeTab = "dashboard"; // dashboard | register
+let search = "";
+let filters = {cdo:"All", voCode:"All", reason:"All", status:"All", targetDate:"", collectionDate:"", followUpStatus:"All"};
+let showFilters=false, showNotif=false, showMenu=false;
+let commitToday=true; // default view: only show records whose commitment range covers today
+let dashboardExpanded=false; // false = overview (stat grid + Recent list), true = full filterable list
+let expandedRow=null;
+let followUpEditRow=null;// record whose follow-up form is open (BM)
+let collectRow=null;     // record whose Record Collection sheet is open (CDO)
+let historyRow=null;     // record whose Member History modal is open
+let confirmDeleteFollowUp=false; // inline confirm state for BM deleting their own comment
+let showTimeSim=false; // Time Simulator modal open state
+let loginPin="";
+let loginError=false;
+let page=1, perPage=10;
+
+// Register-form state — every field lives here so a stray re-render (e.g. opening
+// the notification bell while mid-fill) never silently wipes what's been typed.
+let regForm = {
+  voCode:"", memberName:"", memberNo:"", phone:"",
+  loanProductId:"", targetDate:"", disbursementDate:"", disbursementDateTouched:false,
+  reason:"", reasonNote:"", commitFrom:"", commitTo:"",
+  collectionStatus:"no", collectedAmt:"", targetAmt:"", remarks:"", // "no" (Full miss) is the default
+};
+function resetRegForm(){
+  regForm = {
+    voCode:"", memberName:"", memberNo:"", phone:"",
+    loanProductId:"", targetDate:"", disbursementDate:"", disbursementDateTouched:false,
+    reason:"", reasonNote:"", commitFrom:"", commitTo:"",
+    collectionStatus:"no", collectedAmt:"", targetAmt:"", remarks:"",
+  };
+}
+
+function scopedData(){
+  if(!currentUser) return [];
+  if(currentUser.role==="cdo") return DATA.filter(r=>r.cdo===currentUser.cdoId);
+  return DATA.filter(r=>r.branch===currentUser.branch); // BM: branch-wide, all CDOs
+}
+
+const rowCommitCoversToday = row=>{
+  if(!row.commitmentFrom || !row.commitmentTo) return false;
+  const t=nowDateStr();
+  return row.commitmentFrom<=t && t<=row.commitmentTo;
+};
+function getFiltered(){
+  return scopedData().filter(r=>{
+    if(filters.cdo!=="All" && r.cdo!==filters.cdo) return false;
+    if(filters.voCode!=="All" && r.voCode!==filters.voCode) return false;
+    if(filters.reason!=="All" && r.reason!==filters.reason) return false;
+    if(filters.status!=="All" && getStatus(r)!==filters.status) return false;
+    if(filters.targetDate && r.targetDate!==filters.targetDate) return false;
+    if(filters.collectionDate && getLatest(r)!==filters.collectionDate) return false;
+    if(commitToday && !rowCommitCoversToday(r)) return false;
+    if(filters.followUpStatus!=="All"){
+      const fu=r.followUp;
+      if(filters.followUpStatus==="pending" && fu) return false;
+      if(filters.followUpStatus==="completed" && !(fu && getCollected(r)>=r.targetAmount)) return false;
+      if(filters.followUpStatus==="overdue" && !(fu && new Date(fu.date)<TODAY && getCollected(r)<r.targetAmount)) return false;
+    }
+    if(search){
+      const q=search.toLowerCase();
+      return r.memberName.toLowerCase().includes(q)||r.memberNo.includes(q)||r.voCode.includes(q);
+    }
+    return true;
+  });
+}
+function hasFilter(){
+  return search||filters.cdo!=="All"||filters.voCode!=="All"||filters.reason!=="All"||filters.status!=="All"||filters.targetDate||filters.collectionDate||filters.followUpStatus!=="All";
+}
+function calcStats(){
+  const d=scopedData();
+  return{
+    total:d.length,
+    newmiss:d.filter(r=>getStatus(r)==="newmiss").length,
+    remiss:d.filter(r=>getStatus(r)==="remiss").length,
+    partial:d.filter(r=>getStatus(r)==="partial").length,
+    full:d.filter(r=>getStatus(r)==="full").length,
+    grace:d.filter(r=>getStatus(r)==="grace").length,
+    active:d.filter(r=>getStatus(r)==="active").length,
+  };
+}
+
+// ══════════════════════════════════════════════════════════════
+// Swatch helper
+// ══════════════════════════════════════════════════════════════
+const SWATCH_MAP = {
+  newmiss: {bg:"#fce4f5", border:"#d500a0"},
+  remiss:  {bg:"#ffcdd2", border:"#7f0000"},
+  partial: {bg:"#fffde7", border:"#f9a825"},
+  full:    {bg:"#e8f5e9", border:"#2e7d32"},
+  grace:   {bg:"#f3e5f5", border:"#7b1fa2"},
+  active:  {bg:"#f0f0f0", border:"#8a8a8a"},
+  total:   {bg:"#fce4ec", border:"#e91e8c"},
+};
+function swatchHtml(k){
+  const s=SWATCH_MAP[k]; if(!s) return"";
+  return `<span class="status-swatch" style="background:${s.bg};border-color:${s.border}"></span>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// MASTER RENDER
+// ══════════════════════════════════════════════════════════════
+function render(){
+  if(!currentUser){ document.getElementById("root").innerHTML = renderLogin(); bindLoginEvents(); return; }
+  const isBM = currentUser.role==="bm";
+  document.getElementById("root").innerHTML = `
+    ${renderHeader()}
+    ${activeTab==="register" && !isBM ? renderRegisterTab() : renderDashboardTab()}
+    ${renderTabBar()}
+    ${(!isBM && activeTab==="dashboard") ? `<button class="fab" id="btn-fab-new" title="${t('newMissBtn')}">+</button>` : ""}
+    <div id="overlay" class="${followUpEditRow||collectRow?"open":""}">
+      ${followUpEditRow?renderFollowUpSheet(followUpEditRow):""}
+      ${collectRow?renderCollectSheet(collectRow):""}
+    </div>
+    <div id="history-overlay" class="${historyRow?"open":""}" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:1000;display:${historyRow?"flex":"none"};align-items:center;justify-content:center;padding:20px">
+      ${historyRow?renderHistoryModal(historyRow):""}
+    </div>
+    <div id="time-sim-overlay" class="${showTimeSim?"open":""}" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:1000;display:${showTimeSim?"flex":"none"};align-items:center;justify-content:center;padding:20px">
+      ${showTimeSim?renderTimeSimModal():""}
+    </div>
+  `;
+  bindEvents();
+  saveDB();
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════════════════════
+function renderLogin(){
+  const dots=[0,1,2,3].map(i=>`<div class="pin-dot ${loginPin.length>i?"filled":""}"></div>`).join("");
+  const keys=["1","2","3","4","5","6","7","8","9","","0","⌫"];
+  return `
+  <div id="login-wrap">
+    <div style="text-align:center;margin-bottom:6px">
+      <div style="width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px">🏦</div>
+      <div style="color:#fff;font-size:20px;font-weight:800">BRAC DCS</div>
+      <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:2px">Schedule Miss Register Module</div>
+    </div>
+    <div style="text-align:center;margin:22px 0 6px;color:#fff;font-size:13px;font-weight:700">${t("loginTitle")}</div>
+    <div style="text-align:center;color:rgba(255,255,255,0.7);font-size:11px;margin-bottom:14px">${t("loginSub")}</div>
+    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:6px">${dots}</div>
+    ${loginError?`<div style="text-align:center;color:#ffcdd2;font-size:11.5px;margin-top:8px">${t("loginErr")}</div>`:""}
+    <div class="keypad">
+      ${keys.map(k=>k===""?`<div></div>`:`<button class="key-btn" data-key="${k}">${k}</button>`).join("")}
+    </div>
+    <div style="margin-top:30px">
+      <div style="color:rgba(255,255,255,0.6);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">${t("demoUsers")}</div>
+      <button class="demo-chip" data-pin="1234"><b>1234 — Rima Aktar</b>CDO-014 · ${t("cdoRole")} · ${BRANCH}</button>
+      <button class="demo-chip" data-pin="5678"><b>5678 — Shirin Akter</b>CDO-021 · ${t("cdoRole")} · ${BRANCH}</button>
+      <button class="demo-chip" data-pin="9999"><b>9999 — Kamal Hossain</b>${t("bmRole")} · ${BRANCH}</button>
+    </div>
+  </div>`;
+}
+let dailyPushDismissed = false;
+function tryLogin(){
+  const u=USERS[loginPin];
+  if(u){
+    currentUser=u; loginPin=""; loginError=false; activeTab="dashboard"; dashboardExpanded=false; page=1;
+    dailyPushDismissed = (u.role!=="cdo"); // FR-17: only CDO gets the daily summary push
+    render();
+    toast(`${t("welcomeBack")}, ${currentUser.name}`);
+  }
+  else { loginError=true; loginPin=""; render(); }
+}
+function bindLoginEvents(){
+  document.querySelectorAll(".key-btn").forEach(b=>{
+    b.onclick=()=>{
+      const k=b.dataset.key;
+      if(k==="⌫") loginPin=loginPin.slice(0,-1);
+      else if(loginPin.length<4) loginPin+=k;
+      if(loginPin.length===4) return tryLogin();
+      render();
+    };
+  });
+  document.querySelectorAll(".demo-chip").forEach(b=>{
+    b.onclick=()=>{ loginPin=b.dataset.pin; tryLogin(); };
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// HEADER
+// ══════════════════════════════════════════════════════════════
+function renderHeader(){
+  const bnClass=lang==="bn"?"bn":"";
+  const isBM=currentUser.role==="bm";
+  // FR-17 (CDO): Re-miss worklist, plus unread BM follow-up comments on their own records.
+  // FR-25 (BM/ABM): escalation only — NOT the CDO's routine re-miss worklist alerts.
+  const notifCount = isBM
+    ? scopedData().filter(r=>r.escalated).length
+    : scopedData().filter(r=>getStatus(r)==="remiss").length
+      + NOTIFICATIONS.filter(n=>n.toCdoId===currentUser.cdoId && !n.read).length;
+  const uName = lang==="bn"?currentUser.nameBn:currentUser.name;
+  const uSub = isBM ? t("bmRole") : `${t("cdoRole")} · ${currentUser.cdoId}`;
+  return `
+  <div id="app-header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:6px">
+        <div>
+          <div class="${bnClass}" style="color:#fff;font-size:17px;font-weight:800;letter-spacing:-0.3px;line-height:1.15">${t("appSub")}</div>
+          <div class="${bnClass}" style="color:rgba(255,255,255,0.7);font-size:10px;font-weight:600;letter-spacing:${lang==="en"?"1.2px":"0.3px"};text-transform:${lang==="en"?"uppercase":"none"};margin-top:1px">${t("appTitle")}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;padding-top:2px">
+          <button id="btn-timesim" title="${t('timeSimBtn')}" style="background:rgba(255,255,255,0.18);color:#fff;border:1.5px solid rgba(255,255,255,0.28);border-radius:20px;padding:5px 9px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px">
+            🕐
+          </button>
+          <button id="btn-lang" style="background:rgba(255,255,255,0.18);color:#fff;border:1.5px solid rgba(255,255,255,0.28);border-radius:20px;padding:5px 11px;font-size:11px;font-weight:800;cursor:pointer">
+            ${lang==="en"?"বাং":"EN"}
+          </button>
+          <button id="btn-notif" style="background:none;border:none;cursor:pointer;position:relative;padding:4px 6px;display:flex;align-items:center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.55)"><path d="M12 22a2 2 0 002-2H10a2 2 0 002 2zm6-6V10a6 6 0 00-5-5.91V3a1 1 0 10-2 0v1.09A6 6 0 006 10v6l-2 2v1h16v-1l-2-2z"/></svg>
+            ${notifCount>0?`<span style="position:absolute;top:1px;right:2px;background:#fff;color:#c8005e;border-radius:50%;width:15px;height:15px;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center">${notifCount>9?"9+":notifCount}</span>`:""}
+          </button>
+          <button id="btn-menu" style="background:none;border:none;cursor:pointer;padding:4px 6px;display:flex;align-items:center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.3" stroke-linecap="round"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;gap:8px">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="role-badge">${isBM?"🧑‍💼":"👤"} ${uName} · ${uSub}</span>
+        </div>
+        <span class="role-badge mono" style="font-size:9.5px" title="${t('timeSimTitle')}">🕐 ${fmtDate(TODAY)}</span>
+      </div>
+    </div>
+    ${showNotif?renderNotifPopup():""}
+    ${showMenu?renderMenuPopup():""}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// TAB BAR
+// ══════════════════════════════════════════════════════════════
+function renderTabBar(){
+  const isBM=currentUser.role==="bm";
+  const tabs = isBM
+    ? [{k:"dashboard",label:t("dashTab"),icon:"📋"}]
+    : [{k:"dashboard",label:t("dashTab"),icon:"📋"},{k:"register",label:t("registerTab"),icon:"➕"}];
+  if(tabs.length<2) return "";
+  return `
+  <div id="tabbar">
+    ${tabs.map(tb=>`
+      <button class="tab-btn ${activeTab===tb.k?"active":""}" data-tab="${tb.k}">
+        <span style="font-size:17px">${tb.icon}</span><span class="${lang==='bn'?'bn':''}">${tb.label}</span>
+      </button>`).join("")}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD TAB
+// ══════════════════════════════════════════════════════════════
+function renderDashboardTab(){
+  const bnClass=lang==="bn"?"bn":"";
+  const isBM=currentUser.role==="bm";
+  const STATUS_LABELS={full:t("stFull"),partial:t("stPartial"),remiss:t("stRemiss"),newmiss:t("stNewMiss"),grace:t("stGrace"),active:t("stActive")};
+
+  // A record is selected — show its dedicated detail page instead of the list.
+  if(expandedRow){
+    const row=DATA.find(r=>r.loanId===expandedRow);
+    if(row) return renderRecordDetailPage(row, STATUS_LABELS);
+    expandedRow=null; // record vanished (e.g. dropped by a Grace expiry) — fall through to the list
+  }
+
+  const filtered=sortFullLast(getFiltered());
+  const totalPages=Math.ceil(filtered.length/perPage)||1;
+  if(page>totalPages) page=totalPages;
+  const paged=filtered.slice((page-1)*perPage,page*perPage);
+  const stats=calcStats();
+
+  // Stat grid — exactly FR-14's category set. Full Collection is included in the grid too
+  // (no archiving/hiding — resolved records stay visible, just sorted to the end of the list).
+  const STAT_CARDS=[
+    {key:"total",    border:"#e91e8c", full:true,  count:stats.total,   label:t("total")},
+    {key:"newmiss",  border:"#d500a0", count:stats.newmiss, label:t("lgNewMiss")},
+    {key:"remiss",   border:"#7f0000", count:stats.remiss,  label:t("lgRemiss")},
+    {key:"partial",  border:"#f9a825", count:stats.partial, label:t("lgPartial")},
+    {key:"full",     border:"#2e7d32", count:stats.full,    label:t("lgFull")},
+    {key:"grace",    border:"#7b1fa2", count:stats.grace,   label:t("lgGrace")},
+  ];
+
+  const statusOpts=[
+    {value:"All",label:`<span class="${bnClass}">${t("allOpt")}</span>`},
+    {value:"newmiss",label:`${swatchHtml("newmiss")} <span class="${bnClass}">${t("stNewMiss")}</span>`},
+    {value:"remiss", label:`${swatchHtml("remiss")} <span class="${bnClass}">${t("stRemiss")}</span>`},
+    {value:"partial",label:`${swatchHtml("partial")} <span class="${bnClass}">${t("stPartial")}</span>`},
+    {value:"full",   label:`${swatchHtml("full")} <span class="${bnClass}">${t("stFull")}</span>`},
+    {value:"grace",  label:`${swatchHtml("grace")} <span class="${bnClass}">${t("stGrace")}</span>`},
+    {value:"active", label:`${swatchHtml("active")} <span class="${bnClass}">${t("stActive")}</span>`},
+  ];
+  const voCodeOpts=["All",...VO_CODES];
+  const reasonOpts=[
+    {value:"All",label:t("allOpt")},
+    ...REASON_KEYS.map((k,i)=>({value:k,label:lang==="bn"?REASONS_BN[i]:k})),
+  ];
+  const half=2;
+  let start=Math.max(1,page-half),end=Math.min(totalPages,page+half);
+  if(end-start<half*2){start=Math.max(1,end-half*2);end=Math.min(totalPages,start+half*2);}
+  const pageNums=[];for(let i=start;i<=end;i++)pageNums.push(i);
+
+  const recentRows = sortByUrgency(filtered).slice(0,5);
+
+  return `
+  <div id="page-content">
+    ${!isBM?`
+    <div style="max-width:1100px;margin:0 auto;padding:10px 14px 0">
+      <div style="background:#fff7e0;border:1px solid #f5d98a;border-radius:10px;padding:8px 11px;font-size:10.5px;color:#8a6300;line-height:1.4" class="${bnClass}">${t("manualModeNote")}</div>
+    </div>`:""}
+
+    ${(!isBM && !dailyPushDismissed)?`
+    <div style="max-width:1100px;margin:0 auto;padding:10px 14px 0">
+      <div style="background:linear-gradient(135deg,#fce4ec,#f8bbd0);border:1px solid #f48fb1;border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:9px">
+        <span style="font-size:16px;flex-shrink:0">📬</span>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:800;color:#ad1457;margin-bottom:3px" class="${bnClass}">${lang==='en'?"Today's Summary (daily push notification)":'আজকের সারসংক্ষেপ (দৈনিক পুশ নোটিফিকেশন)'}</div>
+          <div style="font-size:10.5px;color:#6a1b3a;line-height:1.5" class="${bnClass}">${lang==='en'
+            ? `${stats.newmiss} New · ${stats.remiss} Re-miss · ${stats.partial} Partial · ${stats.full} Full · ${stats.grace} Grace`
+            : `${stats.newmiss} নতুন · ${stats.remiss} রি-মিস · ${stats.partial} আংশিক · ${stats.full} সম্পূর্ণ · ${stats.grace} গ্রেস`}</div>
+        </div>
+        <button id="btn-dismiss-push" style="background:none;border:none;color:#ad1457;font-size:16px;cursor:pointer;flex-shrink:0;padding:0 2px">✕</button>
+      </div>
+    </div>`:""}
+
+    <!-- Stat grid — always visible, FR-14 -->
+    <div style="max-width:1100px;margin:0 auto;padding:12px 14px 0">
+      ${isBM?`<div style="font-size:10px;font-weight:800;color:#999;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px" class="${bnClass}">${t('branchView')}</div>`:""}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${STAT_CARDS.map(c=>`
+          <div class="stat-card-click" data-status="${c.key==='total'?'All':c.key}"
+            style="background:${c.full?'#fff':'#faf7f5'};border:${c.full?`2px solid ${c.border}`:'1.5px solid #ece3ea'};border-left:5px solid ${c.border};border-radius:12px;padding:12px 13px;cursor:pointer">
+            <div style="font-size:9.5px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.4px;line-height:1.3;margin-bottom:6px" class="${bnClass}">${c.label}</div>
+            <div class="mono" style="font-size:25px;font-weight:800;color:#1a1a1a">${c.count}</div>
+          </div>`).join("")}
+      </div>
+    </div>
+
+    <!-- Search bar -->
+    <div class="panel" style="background:transparent;box-shadow:none;border-bottom:none">
+      <div class="panel-inner" style="padding-top:14px;padding-bottom:6px">
+        <div style="display:flex;gap:8px">
+          <div style="flex:1;position:relative">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d6006e" stroke-width="2.4" style="position:absolute;left:10px;top:50%;transform:translateY(-50%)"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="search-input" placeholder="${t('searchPlh')}" value="${search}" class="${bnClass}" style="padding-left:32px;border-radius:22px;background:#fff"/>
+          </div>
+          <button id="btn-filter" style="background:#fff;color:${hasFilter()?"#d6006e":"#999"};border:1.5px solid ${hasFilter()?"#d6006e":"#e8dde5"};border-radius:12px;width:44px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 21v-7M6 10V3M12 21v-11M12 6V3M18 21v-5M18 12V3"/><circle cx="6" cy="13" r="2"/><circle cx="12" cy="8" r="2"/><circle cx="18" cy="14" r="2"/></svg>
+            ${hasFilter()?`<span style="position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:#d6006e"></span>`:""}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter panel -->
+    ${showFilters?`
+    <div class="panel">
+      <div class="panel-inner">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="${bnClass} panel-title" style="margin-bottom:0">${lang==='en'?'Filters':'ফিল্টার'}</div>
+          <button id="btn-clear" class="btn-ghost ${bnClass}">${t('clearFilters')}</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${isBM?`
+          <div>
+            <div class="${bnClass}" style="font-size:9px;color:#d6006e;font-weight:800;text-transform:uppercase;margin-bottom:4px">${t('filterByCdo')}</div>
+            <div class="select-wrap">
+              <select id="f-cdo" class="styled-select">
+                <option value="All" ${filters.cdo==="All"?"selected":""}>${t('allCdos')}</option>
+                ${CDO_IDS.map(c=>`<option value="${c}" ${filters.cdo===c?"selected":""}>${c} — ${cdoName(c)}</option>`).join("")}
+              </select>
+            </div>
+          </div>`:""}
+          <div>
+            <div class="${bnClass}" style="font-size:9px;color:#d6006e;font-weight:800;text-transform:uppercase;margin-bottom:4px">${t('voCode')}</div>
+            <div class="select-wrap">
+              <select id="f-voCode" class="styled-select">
+                ${voCodeOpts.map(v=>`<option value="${v}" ${filters.voCode===v?"selected":""}>${v==="All"?t('allOpt'):v}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+          <div style="position:relative">
+            <div class="${bnClass}" style="font-size:9px;color:#d6006e;font-weight:800;text-transform:uppercase;margin-bottom:4px">${t('status')}</div>
+            <div id="status-dropdown-btn" style="display:flex;align-items:center;gap:6px;width:100%;border:2px solid #e91e8c33;border-radius:10px;padding:8px 30px 8px 10px;font-size:12px;background:#fdf5f9;cursor:pointer;position:relative;min-height:36px">
+              ${renderStatusSelected(filters.status)}
+              <span style="position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:12px;color:#d6006e">▾</span>
+            </div>
+            <div id="status-dropdown-menu" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid #e91e8c33;border-radius:10px;z-index:50;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.1)">
+              ${statusOpts.map(o=>`<div class="status-opt" data-val="${o.value}" style="display:flex;align-items:center;gap:7px;padding:8px 10px;cursor:pointer;font-size:12px;background:${filters.status===o.value?"#fce4ec":"#fff"};border-bottom:1px solid #f0e0f0">${o.label}</div>`).join("")}
+            </div>
+          </div>
+          <div>
+            <div class="${bnClass}" style="font-size:9px;color:#d6006e;font-weight:800;text-transform:uppercase;margin-bottom:4px">${t('reason')}</div>
+            <div class="select-wrap">
+              <select id="f-reason" class="styled-select">
+                ${reasonOpts.map(o=>`<option value="${o.value}" ${filters.reason===o.value?"selected":""}>${o.label}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+          <div>
+            <div class="${bnClass}" style="font-size:9px;color:#d6006e;font-weight:800;text-transform:uppercase;margin-bottom:4px">${t('targetDate')}</div>
+            <input type="date" id="f-targetDate" value="${filters.targetDate}"/>
+          </div>
+          <div>
+            <div class="${bnClass}" style="font-size:9px;color:#d6006e;font-weight:800;text-transform:uppercase;margin-bottom:4px">${t('colDate')}</div>
+            <input type="date" id="f-collectionDate" value="${filters.collectionDate}"/>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding-top:4px">
+            <button type="button" id="btn-toggle-commit-today" role="switch" aria-checked="${commitToday}" style="width:38px;height:22px;border-radius:12px;border:none;position:relative;cursor:pointer;background:${commitToday?'#d6006e':'#ddd'};flex-shrink:0;padding:0">
+              <span style="position:absolute;top:2px;left:${commitToday?'18px':'2px'};width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s"></span>
+            </button>
+            <div class="${bnClass}" style="font-size:11px;color:#555;font-weight:600">${t('todayCommitOnly')}</div>
+          </div>
+          ${isBM?`
+          <div>
+            <div class="${bnClass}" style="font-size:9px;color:#d6006e;font-weight:800;text-transform:uppercase;margin-bottom:4px">${t('followUpStatus')}</div>
+            <div class="select-wrap">
+              <select id="f-followUp" class="styled-select">
+                <option value="All" ${filters.followUpStatus==="All"?"selected":""}>${t('fuAny')}</option>
+                <option value="pending" ${filters.followUpStatus==="pending"?"selected":""}>${t('fuPending')}</option>
+                <option value="completed" ${filters.followUpStatus==="completed"?"selected":""}>${t('fuCompleted')}</option>
+                <option value="overdue" ${filters.followUpStatus==="overdue"?"selected":""}>${t('fuOverdue')}</option>
+              </select>
+            </div>
+          </div>`:""}
+        </div>
+      </div>
+    </div>`:""}
+
+    ${!dashboardExpanded?`
+    <!-- OVERVIEW: Recent Schedule Miss preview -->
+    <div style="max-width:1100px;margin:0 auto;padding:14px 14px 90px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:14.5px;font-weight:800;color:#1a1a1a" class="${bnClass}">${lang==='en'?'Recent Schedule Miss':'সাম্প্রতিক সিডিউল মিস'}</div>
+        <button id="btn-view-all" class="${bnClass}" style="background:none;border:none;color:#1565c0;font-weight:700;font-size:12.5px;cursor:pointer">${lang==='en'?'View All':'সব দেখুন'} →</button>
+      </div>
+      ${recentRows.length===0?`<div style="background:#fff;border-radius:14px;padding:40px 20px;text-align:center;color:#bbb;font-size:15px" class="${bnClass}">${t('noRecords')}</div>`:""}
+      ${recentRows.map(row=>renderCard(row,STATUS_LABELS)).join("")}
+    </div>
+    `:`
+    <!-- EXPANDED: full filterable list -->
+    <div style="max-width:1100px;margin:0 auto;padding:10px 14px 90px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;flex-wrap:wrap">
+        <button id="btn-back-overview" class="${bnClass}" style="background:none;border:none;color:#d6006e;font-weight:700;font-size:12px;cursor:pointer;padding:0">← ${lang==='en'?'Overview':'ওভারভিউ'}</button>
+        <span style="font-size:11px;color:#bbb" class="${bnClass}"><span class="mono">${filtered.length}</span> ${filtered.length!==1?t('records'):t('record')}</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:8px;gap:6px">
+        <span style="font-size:11px;color:#bbb" class="${bnClass}">${t('perPage')}:</span>
+        <div style="display:flex;gap:4px">
+          ${[10,25,50,100].map(n=>`<button class="pg-size-btn" data-n="${n}" style="background:${perPage===n?"#d6006e":"#fce4ec"};color:${perPage===n?"#fff":"#d6006e"};border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer" class="mono">${n}</button>`).join("")}
+        </div>
+      </div>
+      ${paged.length===0?`<div style="background:#fff;border-radius:14px;padding:40px 20px;text-align:center;color:#bbb;font-size:15px" class="${bnClass}">${t('noRecords')}</div>`:""}
+      ${paged.map(row=>renderCard(row,STATUS_LABELS)).join("")}
+
+      ${totalPages>1?`
+      <div style="display:flex;align-items:center;justify-content:center;gap:5px;margin-top:14px;flex-wrap:wrap">
+        <button class="page-btn" id="pg-first" ${page===1?"disabled":""}>«</button>
+        <button class="page-btn" id="pg-prev" ${page===1?"disabled":""}>‹</button>
+        ${pageNums[0]>1?`<span style="color:#bbb;font-size:13px" class="mono">…</span>`:""}
+        ${pageNums.map(n=>`<button class="page-btn pg-num ${page===n?"active":""}" data-n="${n}">${n}</button>`).join("")}
+        ${pageNums[pageNums.length-1]<totalPages?`<span style="color:#bbb;font-size:13px" class="mono">…</span>`:""}
+        <button class="page-btn" id="pg-next" ${page===totalPages?"disabled":""}>›</button>
+        <button class="page-btn" id="pg-last" ${page===totalPages?"disabled":""}>»</button>
+      </div>`:""}
+    </div>
+    `}
+  </div>`;
+}
+
+function renderStatusSelected(val){
+  const bnClass=lang==="bn"?"bn":"";
+  if(val==="All") return `<span class="${bnClass}">${t('allOpt')}</span>`;
+  const map={newmiss:t("stNewMiss"),remiss:t("stRemiss"),partial:t("stPartial"),full:t("stFull"),grace:t("stGrace"),active:t("stActive")};
+  return `${swatchHtml(val)} <span class="${bnClass}" style="font-size:12px">${map[val]||val}</span>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// CARD (shared, role-aware)
+// ══════════════════════════════════════════════════════════════
+function renderCard(row, STATUS_LABELS){
+  const bnClass=lang==="bn"?"bn":"";
+  const isBM=currentUser.role==="bm";
+  const status=getStatus(row);
+  const sc={
+    full:{bg:"#e8f5e9",border:"#66bb6a33",left:"#2e7d32"},
+    partial:{bg:"#fffde7",border:"#f9a82555",left:"#f9a825"},
+    remiss:{bg:"#ffcdd2",border:"#7f000055",left:"#7f0000"},
+    newmiss:{bg:"#fce4f5",border:"#d500a066",left:"#d500a0"},
+    grace:{bg:"#f3e5f5",border:"#ab47bc88",left:"#7b1fa2"},
+    active:{bg:"#ffffff",border:"#e0d0ee",left:"#8a8a8a"},
+  }[status];
+  const due=row.targetAmount-getCollected(row);
+  const phoneClean=row.phone.replace(/-/g,"");
+
+  const quickActions = `
+    <div style="display:flex;gap:5px;flex-shrink:0" onclick="event.stopPropagation()">
+      <a class="quick-icon-btn quick-call" href="tel:${phoneClean}" title="${t('call')}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.65A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.4a16 16 0 006.72 6.72l1.77-1.77a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      </a>
+      <a class="quick-icon-btn quick-sms" href="sms:${phoneClean}" title="${t('sms')}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </a>
+    </div>`;
+
+  // Compact list row only — tapping it navigates to a dedicated detail page instead of
+  // expanding inline, so the list stays scannable and the detail gets room to breathe.
+  return `
+  <div class="card" style="background:${sc.bg};border-color:${sc.border};border-left:5px solid ${sc.left}">
+    <div class="card-header" data-loan-id="${row.loanId}">
+      <div class="sl-badge">${row.loanId.replace('LN-0','').replace(/^0+/,'')||row.loanId}</div>
+      <div style="min-width:0;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px">
+          <span class="vo-pill mono">VO ${row.voCode}</span>
+          ${status==="newmiss"?`<span class="wbr" style="font-size:13px;line-height:1;flex-shrink:0">🔔</span>`:""}
+          ${row.escalated?`<span class="esc-badge">🚨</span>`:""}
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
+          <span class="member-name">${row.memberName}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0">
+            <span class="cdo-pill mono">${row.loanId}</span>
+            <span style="color:#666;font-size:9px" class="mono">🕘 ${commitRangeStr(row)}</span>
+          </div>
+          ${quickActions}
+        </div>
+        ${isBM?`<div class="cdo-line ${bnClass}">👤 ${row.cdo} — ${row.cdoName}</div>`:""}
+        ${status==="grace"?`<div class="${bnClass}" style="font-size:9.5px;color:#7b1fa2;font-weight:700;margin-top:2px">🌱 ${t('grEndsIn')} ${graceDaysLeft(row)} ${t('grDaysLeft')}</div>`:""}
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        ${status==="full"
+          ?`<div style="color:#2e7d32;font-weight:800;font-size:12px" class="${bnClass}">${t('paidLabel')}</div>`
+          :status==="grace"
+            ?`<div class="mono" style="font-weight:700;font-size:13px;color:#7b1fa2">${fmt(Math.max(0,due))}</div>`
+            :`<div class="mono" style="font-weight:700;font-size:13px;color:${status==="remiss"?"#7f0000":status==="newmiss"?"#d500a0":"#c8005e"}">${fmt(due)}</div>`}
+        <div style="font-size:9px;color:rgba(0,0,0,0.3);margin-top:1px" class="mono">${t('outstanding')}</div>
+      </div>
+      <div class="expand-arrow">›</div>
+    </div>
+  </div>`;
+}
+
+// Everything that used to live inside the inline card-body now lives here, reused by the
+// full-page detail view below — same content, just given a whole page instead of a sliver
+// of an accordion, per the "too much information in one page" feedback.
+function renderRecordBody(row, isBM, STATUS_LABELS){
+  const bnClass=lang==="bn"?"bn":"";
+  const status=getStatus(row);
+  const sc={
+    full:{bg:"#e8f5e9",left:"#2e7d32"}, partial:{bg:"#fffde7",left:"#f9a825"},
+    remiss:{bg:"#ffcdd2",left:"#7f0000"}, newmiss:{bg:"#fce4f5",left:"#d500a0"},
+    grace:{bg:"#f3e5f5",left:"#7b1fa2"}, active:{bg:"#ffffff",left:"#8a8a8a"},
+  }[status];
+  const collected=getCollected(row);
+  const due=row.targetAmount-collected;
+  const statusLabel=STATUS_LABELS[status];
+  const canRecordCollection = !isBM && status!=="full" && status!=="grace" && !!row.commitmentTo;
+
+  // Commitment History — VO, Name and Loan No. lead the page header itself (see
+  // renderRecordDetailPage); this is the "then Commitment history" part of that ordering.
+  const commitHistoryBlock = status==="grace" ? "" : `
+      <div class="info-cell info-full" style="margin-bottom:12px">
+        <div class="info-label ${bnClass}" style="margin-bottom:4px">${t('commitHistory')}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+          ${(row.commitmentHistory||[]).filter((h,i,arr)=>h.to!==row.commitmentTo && arr.findIndex(x=>x.to===h.to)===i).map(h=>
+            `<span class="mono" style="font-size:11px;color:#888;text-decoration:line-through">${fmtDate(h.from)}–${fmtDate(h.to)}</span><span style="color:#ccc">→</span>`
+          ).join("")}
+          <span class="mono" style="font-size:11px;color:#333;font-weight:700">${commitRangeStr(row)}</span>
+        </div>
+      </div>`;
+
+  return `
+      ${status!=="active"?`
+      <div style="background:rgba(0,0,0,0.025);border-radius:8px;padding:7px 10px;margin-bottom:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <div style="width:10px;height:10px;background:${sc.bg};border:2px solid ${sc.left};border-radius:2px;flex-shrink:0"></div>
+        <span style="font-size:11px;font-weight:700;color:#555" class="${bnClass}">${statusLabel}</span>
+        ${row.escalated?`<span class="esc-badge">${t('escalated')}</span>`:""}
+      </div>`:""}
+      ${row.escalated?`<div style="background:#ffebee;border:1px solid #ef9a9a;border-radius:8px;padding:7px 10px;margin-bottom:12px;font-size:10.5px;color:#b71c1c" class="${bnClass}">🚨 ${t('escalatedNote')}</div>`:""}
+
+      ${commitHistoryBlock}
+
+      <div class="info-grid">
+        ${status==="grace"?`
+          <div class="info-cell"><div class="info-label ${bnClass}">${t('voColDate')}</div><div class="info-value">${fmtDate(row.targetDate)}</div></div>
+          <div class="info-cell"><div class="info-label ${bnClass}">${t('targetAmt')}</div><div class="info-value">${fmt(row.targetAmount)}</div></div>
+          <div class="info-cell"><div class="info-label ${bnClass}">${t('disbursementDate')}</div><div class="info-value">${fmtDate(row.disbursementDate)}</div></div>
+          <div class="info-cell"><div class="info-label ${bnClass}">${t('disbursedAmount')}</div><div class="info-value">${fmt(row.disbursedAmount||0)}</div></div>
+          <div class="info-cell info-full">
+            <div class="info-label ${bnClass}">${t('reasonLabel')}</div>
+            <span style="background:#f3e5f5;border:1.5px solid #ab47bc55;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;color:#7b1fa2">${t('gracePeriod')}</span>
+          </div>
+          ${renderPhoneRow(row)}
+          <div class="info-cell info-full" style="background:#f3e5f5;border:1.5px solid #ab47bc55">
+            <div class="info-label" style="color:#7b1fa2;margin-bottom:6px">${t('gracePeriod')}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+              <span style="font-size:12px;color:#555" class="${bnClass}">${t('disbursementDate')}</span>
+              <span style="font-size:13px;font-weight:700;color:#7b1fa2" class="mono">${fmtDate(row.disbursementDate)}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:12px;color:#555" class="${bnClass}">${t('grEndsIn')}</span>
+              <span style="font-size:13px;font-weight:700;color:#7b1fa2" class="mono">${graceDaysLeft(row)} ${t('grDaysLeft')} (${fmtDate(graceEndDate(row))})</span>
+            </div>
+            <div style="font-size:11px;color:#9c27b0;margin-top:5px;font-style:italic" class="${bnClass}">${t('graceDropNote')}</div>
+          </div>
+        `:`
+          ${[
+            {lk:"targetDateL",val:fmtDate(row.targetDate)},{lk:"targetAmt",val:fmt(row.targetAmount)},
+            {lk:"disbursementDate",val:fmtDate(row.disbursementDate)},{lk:"disbursedAmount",val:fmt(row.disbursedAmount||0)},
+            {lk:"outstanding",val:fmt(Math.max(0,due))},{lk:"nextColDate",val:commitRangeStr(row)},
+          ].map(({lk,val})=>`<div class="info-cell"><div class="info-label ${bnClass}">${t(lk)}</div><div class="info-value">${val}</div></div>`).join("")}
+
+          <div class="info-cell info-full">
+            <div class="info-label ${bnClass}">${t('reasonLabel')}</div>
+            ${row.reason
+              ?`<div style="font-size:13px;font-weight:600;color:#222" class="${bnClass}">${reasonDisplay(row.reason)}${row.reason==="Other"&&row.reasonNote?`<span style="font-weight:400;color:#777;font-style:italic"> — ${row.reasonNote}</span>`:""}</div>`
+              :`<div style="font-size:12px;color:#e53935;font-weight:700" class="${bnClass}">${t('notSelected')}</div>`}
+          </div>
+
+          ${renderPhoneRow(row)}
+          ${row.payments.length>0?`
+          <div class="info-cell info-full">
+            <div class="info-label ${bnClass}" style="margin-bottom:6px">${t('payHistory')}</div>
+            ${[...row.payments].sort((a,b)=>new Date(a.date)-new Date(b.date)).map((pm,i,arr)=>`
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#555;padding:5px 0;border-bottom:${i<arr.length-1?"1px solid #eee":"none"}">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="width:6px;height:6px;border-radius:50%;background:#2e7d32;flex-shrink:0;display:inline-block"></span>
+                  <span class="mono">${fmtDate(pm.date)}</span>
+                </div>
+                <span style="font-weight:700;color:#2e7d32" class="mono">${fmt(pm.amount)}</span>
+              </div>`).join("")}
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:#555;border-top:2px solid #e0e0e0;padding-top:6px;margin-top:4px" class="mono">
+              <span style="font-weight:600;color:#666" class="${bnClass}">${lang==="en"?"Total":"মোট"}</span>
+              <span style="font-weight:800;color:${collected>=row.targetAmount?"#2e7d32":"#f9a825"}">${fmt(collected)}</span>
+            </div>
+          </div>`:""}
+        `}
+      </div>
+
+      <button class="history-btn" data-loan-id="${row.loanId}" style="width:100%;background:#fff;border:1.5px solid #e0d0ea;color:#7b1fa2;border-radius:10px;padding:9px;font-size:12.5px;font-weight:700;cursor:pointer;margin-bottom:10px" class="${bnClass}">${t('historyBtn')}</button>
+
+      ${renderFollowUpBlock(row, isBM)}
+
+      ${!isBM ? (
+        status==="grace"
+          ? `<div style="text-align:center;padding:8px 0">
+              <div style="font-size:11px;color:#9c27b0;font-weight:600" class="${bnClass}">🔒 ${lang==='en'?'Locked during Grace Period — nothing to do until it ends.':'গ্রেস পিরিয়ড চলাকালীন লকড — শেষ না হওয়া পর্যন্ত কিছু করার নেই।'}</div>
+            </div>`
+          : `<div style="display:flex;flex-direction:column;gap:8px">
+              ${canRecordCollection?`<button class="btn-primary collect-btn" data-loan-id="${row.loanId}" style="background:linear-gradient(135deg,#2e7d32,#66bb6a)">${t('recordCollectionBtn')}</button>`:""}
+            </div>`
+      ) : ""}`;
+}
+
+// The dedicated detail "page" — a back button + everything from renderRecordBody, given
+// its own full screen instead of squeezed into an inline accordion.
+function renderRecordDetailPage(row, STATUS_LABELS){
+  const bnClass=lang==="bn"?"bn":"";
+  const isBM=currentUser.role==="bm";
+  const status=getStatus(row);
+  const sc={
+    full:{bg:"#e8f5e9",left:"#2e7d32"}, partial:{bg:"#fffde7",left:"#f9a825"},
+    remiss:{bg:"#ffcdd2",left:"#7f0000"}, newmiss:{bg:"#fce4f5",left:"#d500a0"},
+    grace:{bg:"#f3e5f5",left:"#7b1fa2"}, active:{bg:"#ffffff",left:"#8a8a8a"},
+  }[status];
+  return `
+  <div id="page-content" style="background:${sc.bg}">
+    <div style="background:#fff;border-bottom:1px solid #f0e0f0;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10">
+      <button id="btn-detail-back" style="background:none;border:none;cursor:pointer;font-size:19px;color:#333;display:flex">←</button>
+      <div style="min-width:0">
+        <div style="font-size:10px;color:#999;letter-spacing:0.3px" class="mono">VO ${row.voCode}</div>
+        <div style="font-size:15px;font-weight:800;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" class="${bnClass}">${row.memberName}</div>
+        <div style="font-size:10.5px;color:#999" class="mono">${row.loanId} · #${row.memberNo}</div>
+      </div>
+    </div>
+    <div style="max-width:1100px;margin:0 auto;padding:14px 14px 90px;border-left:5px solid ${sc.left}">
+      ${isBM?`<div class="cdo-line ${bnClass}" style="margin-bottom:10px;font-size:11px">👤 ${row.cdo} — ${row.cdoName}</div>`:""}
+      ${renderRecordBody(row, isBM, STATUS_LABELS)}
+    </div>
+  </div>`;
+}
+
+function renderPhoneRow(row){
+  return `
+  <div class="info-cell info-full" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <div>
+      <div class="info-label ${lang==='bn'?'bn':''}">${t('phone')}</div>
+      <div style="font-size:14px;font-weight:700;color:#222;margin-top:2px" class="mono">${row.phone}</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <a href="tel:${row.phone.replace(/-/g,"")}" title="${t('call')}" style="background:linear-gradient(135deg,#c8005e,#e91e8c);color:#fff;border-radius:10px;width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(200,0,94,0.3);text-decoration:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.65A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.4a16 16 0 006.72 6.72l1.77-1.77a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      </a>
+      <a href="sms:${row.phone.replace(/-/g,"")}" title="${t('sms')}" style="background:linear-gradient(135deg,#7b1fa2,#ab47bc);color:#fff;border-radius:10px;width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(123,31,162,0.3);text-decoration:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </a>
+    </div>
+  </div>`;
+}
+
+// Follow-up block — BM can add/edit/delete their own comment; CDO sees read-only
+function renderFollowUpBlock(row, isBM){
+  const bnClass=lang==="bn"?"bn":"";
+  const fu=row.followUp;
+  const isConfirming = isBM && confirmDeleteFollowUp===row.loanId;
+  return `
+  <div class="info-cell info-full" style="background:#eef6ff;border:1px solid #bbdefb;margin-top:2px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${fu?"6px":"0"}">
+      <div class="info-label ${bnClass}" style="color:#1565c0">${t('followUp')}</div>
+      ${isBM?`<button class="fu-btn" data-loan-id="${row.loanId}" style="background:#1565c0;color:#fff;border:none;border-radius:7px;padding:4px 9px;font-size:10.5px;font-weight:700;cursor:pointer" class="${bnClass}">${fu?"✏️":t('addFollowUp')}</button>`:""}
+    </div>
+    ${fu?`
+      <div style="font-size:12px;color:#222;margin-bottom:3px"><b class="mono">${fmtDate(fu.date)}</b></div>
+      <div style="font-size:12px;color:#444;line-height:1.4;margin-bottom:4px" class="${bnClass}">${fu.comment}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:10px;color:#888" class="${bnClass}">${t('followUpBy')} ${fu.by}</div>
+        ${isBM?(isConfirming?`
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:10px;color:#c62828;font-weight:700" class="${bnClass}">${t('confirmDelete')}</span>
+            <button class="fu-delete-confirm" data-loan-id="${row.loanId}" style="background:#c62828;color:#fff;border:none;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer" class="${bnClass}">${t('confirmYes')}</button>
+            <button class="fu-delete-cancel" style="background:#eee;color:#666;border:none;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer" class="${bnClass}">${t('confirmCancel')}</button>
+          </div>
+        `:`<button class="fu-delete-btn" data-loan-id="${row.loanId}" style="background:none;border:none;color:#c62828;font-size:10px;font-weight:700;cursor:pointer" class="${bnClass}">${t('deleteComment')}</button>`):""}
+      </div>
+    `:`<div style="font-size:11px;color:#90a4c4" class="${bnClass}">${t('noFollowUp')}</div>`}
+    ${!isBM?`<div style="font-size:9.5px;color:#90a4c4;margin-top:6px" class="${bnClass}">${t('readOnlyNote')}</div>`:""}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// FOLLOW-UP SHEET — BM only (FR-18)
+// ══════════════════════════════════════════════════════════════
+function renderFollowUpSheet(row){
+  const bnClass=lang==="bn"?"bn":"";
+  const fu=row.followUp||{};
+  return `
+  <div id="edit-sheet">
+    <div style="display:flex;justify-content:center;padding:12px 0 0"><div style="width:36px;height:4px;background:#ddd;border-radius:2px"></div></div>
+    <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);padding:14px 20px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+      <div>
+        <div style="color:rgba(255,255,255,0.7);font-size:10px;letter-spacing:1.5px;text-transform:uppercase" class="${bnClass}">${t('followUp')}</div>
+        <div style="color:#fff;font-size:17px;font-weight:700">${row.memberName}</div>
+      </div>
+      <button id="btn-close-fu" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:10px;width:32px;height:32px;font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:16px 20px 36px">
+      <div style="background:#f7f0f5;border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:11.5px;color:#666" class="${bnClass}">
+        VO ${row.voCode} · #${row.memberNo} · ${row.cdo} (${row.cdoName})
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="f-label" style="color:#1565c0" class="${bnClass}">${t('followUpDate')}</label>
+        <input type="date" id="fu-date" value="${fu.date||""}" style="border-color:#1565c033"/>
+      </div>
+      <div style="margin-bottom:20px">
+        <label class="f-label" style="color:#1565c0" class="${bnClass}">${t('followUpComment')}</label>
+        <textarea id="fu-comment" rows="4" placeholder="${t('descReason')}" style="border-color:#1565c033">${fu.comment||""}</textarea>
+      </div>
+      <button id="btn-save-fu" class="btn-primary ${bnClass}" style="background:linear-gradient(135deg,#1565c0,#42a5f5);box-shadow:0 4px 16px rgba(21,101,192,0.35)">${t('saveFollowUp')}</button>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// RECORD COLLECTION SHEET — CDO only. Closes the loop on a commitment
+// date: log what was actually collected, and if it doesn't fully clear
+// the due amount, force a new Commitment Date so the cycle continues
+// (this is what drives Re-miss / escalation on the next pass).
+// ══════════════════════════════════════════════════════════════
+function renderCollectSheet(row){
+  const bnClass=lang==="bn"?"bn":"";
+  const due=row.targetAmount-getCollected(row);
+  const isGraceMode = getStatus(row)==="grace";
+  const reasonOpts=REASON_KEYS.map((key,i)=>({value:key,label:lang==="bn"?REASONS_BN[i]:key}));
+  return `
+  <div id="edit-sheet">
+    <div style="display:flex;justify-content:center;padding:12px 0 0"><div style="width:36px;height:4px;background:#ddd;border-radius:2px"></div></div>
+    <div style="background:linear-gradient(135deg,${isGraceMode?'#7b1fa2,#ab47bc':'#2e7d32,#66bb6a'});padding:14px 20px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+      <div>
+        <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:1.5px;text-transform:uppercase" class="${bnClass}">${t('recordCollectionTitle')}${isGraceMode?` · ${t('gracePeriod')}`:""}</div>
+        <div style="color:#fff;font-size:17px;font-weight:700">${row.memberName}</div>
+      </div>
+      <button id="btn-close-collect" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:10px;width:32px;height:32px;font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:16px 20px 36px">
+      <div style="background:#f7f0f5;border-radius:10px;padding:12px 14px;margin-bottom:16px;border:1px solid #e8d8f0;display:grid;grid-template-columns:1fr 1fr;gap:8px 12px">
+        <div><div style="font-size:9px;color:#bbb;text-transform:uppercase" class="${bnClass}">${isGraceMode?t('grEndsIn'):t('nextColDate')}</div><div style="font-size:13px;font-weight:600;color:#555" class="mono">${isGraceMode?`${graceDaysLeft(row)} ${t('grDaysLeft')}`:commitRangeStr(row)}</div></div>
+        <div><div style="font-size:9px;color:#bbb;text-transform:uppercase" class="${bnClass}">${t('outstanding2')}</div><div style="font-size:13px;font-weight:700;color:#c8005e" class="mono">${fmt(due)}</div></div>
+      </div>
+      ${isGraceMode?`<div style="background:#f3e5f5;border:1px solid #ce93d8;border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:#7b1fa2;line-height:1.4" class="${bnClass}">🌱 ${t('graceDueChangeOnly')}</div>`:""}
+      <div style="margin-bottom:14px">
+        <label class="f-label ${bnClass}">${t('collectionDateF')}</label>
+        <input type="date" id="collect-date" value="${isGraceMode?nowDateStr():(row.commitmentTo||"")}"/>
+      </div>
+      <div style="margin-bottom:6px">
+        <label class="f-label ${bnClass}">${t('amountCollectedF')}</label>
+        <input type="number" id="collect-amount" placeholder="0" min="0"/>
+      </div>
+      <div id="collect-outcome-note" style="font-size:11px;color:#888;margin-bottom:14px;font-style:italic" class="${bnClass}"></div>
+      ${isGraceMode?"":`
+      <div id="collect-new-commit-wrap" style="margin-bottom:14px;display:none">
+        <label class="f-label ${bnClass}" style="color:#c8005e">${t('newCommitDateF')}</label>
+        <input type="date" id="collect-new-commit-from"/>
+        <label class="f-label ${bnClass}" style="color:#c8005e;margin-top:10px">${t('newCommitToF')}</label>
+        <input type="date" id="collect-new-commit-to"/>
+        <div style="font-size:10.5px;color:#e65100;margin-top:5px;line-height:1.4" class="${bnClass}">${t('newCommitRequired')}</div>
+        <div id="collect-newcommit-err" style="color:#e53935;font-size:11px;margin-top:4px;font-weight:600;display:none" class="${bnClass}">${t('fillRequired')}</div>
+      </div>
+      <div id="collect-partial-reason-wrap" style="margin-bottom:20px;display:none">
+        <label class="f-label ${bnClass}" style="color:#c8005e">${t('partialReasonF')}</label>
+        <div class="select-wrap">
+          <select id="collect-partial-reason" class="styled-select" style="font-size:13px;padding:10px 32px 10px 12px">
+            <option value="">${t('selectReason')}</option>
+            ${reasonOpts.map(o=>`<option value="${o.value}" ${row.reason===o.value?"selected":""}>${o.label}</option>`).join("")}
+          </select>
+        </div>
+        <div id="collect-partial-reason-note-wrap" style="margin-top:10px;display:${row.reason==='Other'?'block':'none'}">
+          <label class="f-label ${bnClass}" style="color:#c8005e">${t('remarksF')} *</label>
+          <textarea id="collect-partial-reason-note" rows="2" maxlength="200" placeholder="${t('descReason')}">${row.reason==='Other'?(row.reasonNote||''):''}</textarea>
+          <div id="collect-partial-reason-note-err" style="color:#e53935;font-size:11px;margin-top:4px;font-weight:600;display:none" class="${bnClass}">${t('remarksReqNote')}</div>
+        </div>
+        <div id="collect-partial-reason-err" style="color:#e53935;font-size:11px;margin-top:4px;font-weight:600;display:none" class="${bnClass}">${t('pleaseSelect')}</div>
+      </div>`}
+      <button id="btn-save-collect" data-grace="${isGraceMode?'1':'0'}" class="btn-primary ${bnClass}" style="background:linear-gradient(135deg,${isGraceMode?'#7b1fa2,#ab47bc':'#2e7d32,#66bb6a'});box-shadow:0 4px 16px rgba(${isGraceMode?'123,31,162':'46,125,50'},0.3)">${t('saveCollection')}</button>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// MEMBER HISTORY MODAL — past cycles: how many missed, how much paid partially
+// ══════════════════════════════════════════════════════════════
+function renderHistoryModal(row){
+  const bnClass=lang==="bn"?"bn":"";
+  const {missedCount,totalPaid}=loanHistoryStats(row);
+  const outcomeMap={partial:{l:t('histStatusPartial'),c:"#a56d00",bg:"#fffde7"},missed:{l:t('histStatusMissed'),c:"#7f0000",bg:"#ffcdd2"}};
+  const remissHist = row.remissHistory||[];
+  const payments = [...row.payments].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  return `
+  <div style="background:#fff;border-radius:18px;width:100%;max-width:420px;max-height:82vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="background:linear-gradient(135deg,#7b1fa2,#ab47bc);padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:1.5px;text-transform:uppercase" class="${bnClass}">${t('historyTitle')}</div>
+        <div style="color:#fff;font-size:16px;font-weight:700">${row.memberName}</div>
+        <div style="color:rgba(255,255,255,0.8);font-size:10.5px;margin-top:1px" class="mono">${row.loanId} · VO ${row.voCode} · #${row.memberNo}</div>
+      </div>
+      <button id="btn-close-history" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:10px;width:30px;height:30px;font-size:16px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:16px 20px 24px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+        <div style="background:#f3e5f5;border-radius:10px;padding:10px 12px;text-align:center">
+          <div class="mono" style="font-size:22px;font-weight:800;color:#7b1fa2">${missedCount}</div>
+          <div style="font-size:9.5px;color:#8e5a9e;font-weight:700;text-transform:uppercase" class="${bnClass}">${t('missedCount')}</div>
+        </div>
+        <div style="background:#e8f5e9;border-radius:10px;padding:10px 12px;text-align:center">
+          <div class="mono" style="font-size:16px;font-weight:800;color:#2e7d32">${fmt(totalPaid)}</div>
+          <div style="font-size:9.5px;color:#4a8f52;font-weight:700;text-transform:uppercase" class="${bnClass}">${t('totalPaidHist')}</div>
+        </div>
+      </div>
+
+      <div style="font-size:11px;font-weight:800;color:#7b1fa2;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px" class="${bnClass}">${t('remissHistTitle')}</div>
+      ${remissHist.length===0?`<div style="text-align:center;color:#bbb;font-size:12.5px;padding:14px 0;margin-bottom:16px" class="${bnClass}">${t('noHistory')}</div>`:`
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
+          ${remissHist.map(h=>{
+            const s=outcomeMap[h.outcome]||outcomeMap.missed;
+            return `<div style="background:${s.bg};border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:9px;color:#888;text-transform:uppercase;font-weight:700" class="${bnClass}">${t('histCommitDate')}</div>
+                <div class="mono" style="font-size:12.5px;font-weight:700;color:#333">${fmtDate(h.commitmentFrom)} – ${fmtDate(h.commitmentTo)}</div>
+                <div style="font-size:10.5px;font-weight:700;color:${s.c};margin-top:2px" class="${bnClass}">${s.l}${h.reason?` — ${reasonDisplay(h.reason)}`:""}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:9px;color:#888;text-transform:uppercase" class="${bnClass}">${t('histDue')}</div>
+                <div class="mono" style="font-size:12px;font-weight:700;color:${s.c}">${fmt(h.dueAtTime)}</div>
+              </div>
+            </div>`;
+          }).join("")}
+        </div>`}
+
+      <div style="font-size:11px;font-weight:800;color:#2e7d32;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px" class="${bnClass}">${t('payHistory')}</div>
+      ${payments.length===0?`<div style="text-align:center;color:#bbb;font-size:12.5px;padding:14px 0" class="${bnClass}">${t('noPayments')}</div>`:`
+        <div style="background:#f7f9f5;border-radius:10px;padding:4px 12px">
+          ${payments.map((pm,i,arr)=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#555;padding:8px 0;border-bottom:${i<arr.length-1?"1px solid #e5ece0":"none"}">
+              <span class="mono">${fmtDate(pm.date)}</span>
+              <span style="font-weight:700;color:#2e7d32" class="mono">${fmt(pm.amount)}</span>
+            </div>`).join("")}
+        </div>`}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// TIME SIMULATOR — set the app's simulated "today" so grace windows, commitment
+// dates, and escalation can be tested without waiting real days/weeks.
+// ══════════════════════════════════════════════════════════════
+function renderTimeSimModal(){
+  const bnClass=lang==="bn"?"bn":"";
+  const localVal = new Date(TODAY.getTime()-TODAY.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  return `
+  <div style="background:#fff;border-radius:18px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:1.5px;text-transform:uppercase" class="${bnClass}">${t('timeSimTitle')}</div>
+        <div style="color:#fff;font-size:15px;font-weight:700">${fmtDateTime(TODAY)}</div>
+      </div>
+      <button id="btn-close-timesim" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:10px;width:30px;height:30px;font-size:16px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:18px 20px 22px">
+      <div style="font-size:11px;color:#888;margin-bottom:16px;line-height:1.5" class="${bnClass}">${t('timeSimSub')}</div>
+      <label class="f-label ${bnClass}">${t('timeSimSetTo')}</label>
+      <input type="datetime-local" id="timesim-input" value="${localVal}" style="margin-bottom:14px"/>
+      <button id="btn-timesim-apply" class="btn-primary ${bnClass}" style="background:linear-gradient(135deg,#1565c0,#42a5f5);margin-bottom:16px">${t('timeSimApply')}</button>
+      <div style="font-size:10px;color:#aaa;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:8px" class="${bnClass}">${t('timeSimQuickTitle')}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <button class="timesim-quick" data-days="1" style="background:#eef6ff;color:#1565c0;border:1.5px solid #90caf9;border-radius:9px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer" class="${bnClass}">${t('timeSimPlus1Day')}</button>
+        <button class="timesim-quick" data-days="7" style="background:#eef6ff;color:#1565c0;border:1.5px solid #90caf9;border-radius:9px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer" class="${bnClass}">${t('timeSimPlus1Week')}</button>
+        <button class="timesim-quick" data-days="30" style="background:#eef6ff;color:#1565c0;border:1.5px solid #90caf9;border-radius:9px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer" class="${bnClass}">${t('timeSimPlus1Month')}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// REGISTER TAB — CDO manual entry (no-ERP interim mode)
+// ══════════════════════════════════════════════════════════════
+function renderRegisterTab(){
+  const bnClass=lang==="bn"?"bn":"";
+  const reasonOpts = REASON_KEYS.map((k,i)=>({key:k,label:lang==="bn"?REASONS_BN[i]:k}));
+  const collectionOpts = [
+    {key:"partial",label:lang==="en"?"Partial":"আংশিক"},
+    {key:"no",    label:t('fullMiss')},
+  ];
+  const g = regFormIsGrace(); // auto-detected from Disbursement Date — not a manual choice
+  return `
+  <div id="page-content">
+    <!-- Screen sub-header, mirrors the CDO app's own navigation for this screen -->
+    <div style="background:#fff;border-bottom:1px solid #f0e0f0;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10">
+      <button id="btn-reg-back" style="background:none;border:none;cursor:pointer;font-size:19px;color:#333;display:flex">←</button>
+      <div style="font-size:15px;font-weight:800;color:#1a1a1a" class="${bnClass}">${t('newMissBtn').replace('+ ','')}</div>
+    </div>
+
+    <div style="max-width:1100px;margin:0 auto;padding:14px 16px 90px">
+      <div style="background:#fff7e0;border:1px solid #f5d98a;border-radius:10px;padding:9px 12px;font-size:10.5px;color:#8a6300;line-height:1.4;margin-bottom:14px" class="${bnClass}">${t('manualModeNote')}</div>
+
+      <!-- VO Selection -->
+      <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:12px">
+        <div style="font-size:12.5px;font-weight:800;color:#1a1a1a;margin-bottom:10px" class="${bnClass}">${t('voSel')}</div>
+        <div class="select-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d6006e" stroke-width="2.4" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <select id="reg-voCode" class="styled-select" style="padding:10px 32px 10px 32px;font-size:13px">
+            ${VO_CODES.map(v=>`<option value="${v}" ${regForm.voCode===v?"selected":""}>VO ${v}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+
+      <!-- Member Selection -->
+      <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:12px">
+        <div style="font-size:12.5px;font-weight:800;color:#1a1a1a;margin-bottom:10px" class="${bnClass}">${t('memberSel')}</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <div style="flex:1;position:relative">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d6006e" stroke-width="2.4" style="position:absolute;left:11px;top:50%;transform:translateY(-50%)"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="reg-memberName" value="${regForm.memberName}" placeholder="${lang==='en'?'Search Member / Member No…':'সদস্য খুঁজুন...'}" style="padding-left:32px"/>
+          </div>
+          <button id="btn-qr-scan" title="${lang==='en'?'Scan QR':'কিউআর স্ক্যান'}" style="background:#fce4ec;border:2px solid #e91e8c33;border-radius:10px;width:42px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d6006e" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 14h2M14 19h2M17 17h4v4"/></svg>
+          </button>
+        </div>
+        <label class="f-label ${bnClass}" style="margin-bottom:5px">${t('memberNoF')}</label>
+        <input type="text" id="reg-memberNo" value="${regForm.memberNo}" placeholder="${lang==='en'?'e.g. 1042':'যেমন ১০৪২'}" style="margin-bottom:10px"/>
+        <label class="f-label ${bnClass}" style="margin-bottom:5px">${t('phoneF')}</label>
+        <input type="tel" id="reg-phone" value="${regForm.phone}" placeholder="017XX-XXXXXX"/>
+      </div>
+
+      <!-- Loan Selection -->
+      <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:12px">
+        <div style="font-size:12.5px;font-weight:800;color:#1a1a1a;margin-bottom:10px" class="${bnClass}">${lang==='en'?'Loan Selection':'ঋণ নির্বাচন'}</div>
+        <div class="select-wrap">
+          <select id="reg-loan" class="styled-select" style="padding:10px 32px 10px 12px;font-size:13px">
+            <option value="">${lang==='en'?'Select Loan':'ঋণ নির্বাচন করুন'}</option>
+            ${LOAN_CATALOG.map(l=>`<option value="${l.id}" ${regForm.loanProductId===l.id?"selected":""}>${l.label}</option>`).join("")}
+          </select>
+        </div>
+        <div id="reg-loan-preview" style="display:${regForm.loanProductId?'block':'none'};margin-top:10px;background:#f7f0f5;border-radius:8px;padding:9px 11px;font-size:11px;color:#666">
+          ${regForm.loanProductId?(()=>{const l=loanById(regForm.loanProductId);return l?`${t('disbursedAmount')}: <b>${fmt(l.disbursedAmount)}</b> &nbsp;·&nbsp; ${lang==='en'?'Standard installment':'নিয়মিত কিস্তি'}: <b>${fmt(l.installment)}</b>`:"";})():""}
+        </div>
+        <div style="margin-top:12px">
+          <label class="f-label ${bnClass}">${t('disbF')}</label>
+          <input type="date" id="reg-disbursementDate" value="${regForm.disbursementDate}"/>
+        </div>
+      </div>
+
+      <!-- Grace Period — auto-detected from Disbursement Date (≤15 days ago). The Yes/No
+           tiles are a status readout, not a choice — they update live as the date changes. -->
+      <div id="reg-grace-box" style="background:${g?'#f3e5f5':'#fff'};border:1.5px solid ${g?'#ce93d8':'#e0d0ea'};border-radius:14px;padding:16px;margin-bottom:12px">
+        <div style="font-size:12.5px;font-weight:800;color:#1a1a1a;margin-bottom:4px" class="${bnClass}">🌱 ${lang==='en'?'Grace Period':'গ্রেস পিরিয়ড'}</div>
+        <div style="font-size:10.5px;color:#888;margin-bottom:10px;line-height:1.4" class="${bnClass}">${lang==='en'?'Auto-detected from Disbursement Date — not a manual choice.':'বিতরণের তারিখ থেকে স্বয়ংক্রিয়ভাবে নির্ধারিত — ম্যানুয়ালি নির্বাচনের প্রয়োজন নেই।'}</div>
+        <div style="display:flex;gap:8px">
+          <div id="reg-grace-yes-pill" style="flex:1;background:${g?'#7b1fa2':'#fdf5f9'};color:${g?'#fff':'#7b1fa2'};border:1.5px solid #7b1fa255;border-radius:10px;padding:10px 4px;font-size:12.5px;font-weight:700;text-align:center" class="${bnClass}">${lang==='en'?'Yes — Grace Period':'হ্যাঁ — গ্রেস পিরিয়ড'}</div>
+          <div id="reg-grace-no-pill" style="flex:1;background:${!g?'#d6006e':'#fdf5f9'};color:${!g?'#fff':'#c8005e'};border:1.5px solid #e91e8c55;border-radius:10px;padding:10px 4px;font-size:12.5px;font-weight:700;text-align:center" class="${bnClass}">${lang==='en'?'No':'না'}</div>
+        </div>
+        <div id="reg-grace-note" style="display:${g?'block':'none'};margin-top:10px;background:#fff;border-radius:10px;padding:9px 11px;font-size:11px;color:#7b1fa2;font-style:italic;line-height:1.5" class="${bnClass}">${lang==='en'?'Nothing else is needed — no VO Collection Date, Reason, Commitment Date or Collection Status. The record is auto-classified as Grace Period.':'আর কিছু প্রয়োজন নেই — ভিও সংগ্রহ তারিখ, কারণ, কমিটমেন্ট তারিখ বা আদায়ের অবস্থা কিছুই লাগবে না। রেকর্ডটি স্বয়ংক্রিয়ভাবে গ্রেস পিরিয়ড হিসেবে চিহ্নিত হবে।'}</div>
+      </div>
+
+      <!-- Miss Information — skipped entirely while Grace Period is auto-detected. -->
+      <div id="reg-miss-info-section" style="display:${g?'none':'block'};background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:16px">
+        <div style="font-size:12.5px;font-weight:800;color:#1a1a1a;margin-bottom:14px" class="${bnClass}">${lang==='en'?'Miss Information':'মিস তথ্য'}</div>
+
+        <div style="margin-bottom:14px">
+          <label class="f-label ${bnClass}">${t('targetDateF')}</label>
+          <input type="date" id="reg-targetDate" value="${regForm.targetDate}"/>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label class="f-label ${bnClass}">${lang==='en'?'Reason for Miss *':'মিসের কারণ *'}</label>
+          <div class="select-wrap">
+            <select id="reg-reason" class="styled-select" style="font-size:13px;padding:10px 32px 10px 12px">
+              <option value="">${t('selectReason')}</option>
+              ${reasonOpts.map(o=>`<option value="${o.key}" ${regForm.reason===o.key?"selected":""}>${o.label}</option>`).join("")}
+            </select>
+          </div>
+          <div id="reg-reason-err" style="display:none;color:#e53935;font-size:11px;margin-top:5px;font-weight:600" class="${bnClass}">${t('pleaseSelect')}</div>
+        </div>
+
+        <div id="reg-reason-note-wrap" style="margin-bottom:14px;display:${regForm.reason==='Other'?'block':'none'}">
+          <label class="f-label ${bnClass}">${t('specifyReason')} *</label>
+          <textarea id="reg-reason-note" rows="2" maxlength="200" placeholder="${t('descReason')}">${regForm.reasonNote}</textarea>
+          <div id="reg-reason-note-err" style="display:none;color:#e53935;font-size:11px;margin-top:5px;font-weight:600" class="${bnClass}">${t('remarksReqNote')}</div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label class="f-label ${bnClass}">${t('commitFromF')}</label>
+          <input type="date" id="reg-commitFrom" value="${regForm.commitFrom}"/>
+          <label class="f-label ${bnClass}" style="margin-top:10px">${t('commitToF')}</label>
+          <input type="date" id="reg-commitTo" value="${regForm.commitTo}"/>
+          <div id="reg-commit-err" style="display:none;color:#e53935;font-size:11px;margin-top:5px;font-weight:600" class="${bnClass}">${t('fillRequired')}</div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label class="f-label ${bnClass}">${lang==='en'?'Collection Status *':'আদায়ের অবস্থা *'}</label>
+          <div id="reg-collection-chips" style="display:flex;gap:7px">
+            ${collectionOpts.map(c=>`
+              <button type="button" class="reg-collection-chip" data-key="${c.key}"
+                style="flex:1;background:${regForm.collectionStatus===c.key?'#d6006e':'#fdf5f9'};color:${regForm.collectionStatus===c.key?'#fff':'#c8005e'};border:1.5px solid #e91e8c55;border-radius:10px;padding:9px 4px;font-size:12px;font-weight:700;cursor:pointer" class="${bnClass}">${c.label}</button>
+            `).join("")}
+          </div>
+          <div id="reg-collection-err" style="display:none;color:#e53935;font-size:11px;margin-top:5px;font-weight:600" class="${bnClass}">${t('fillRequired')}</div>
+        </div>
+
+        <div id="reg-collected-amt-wrap" style="margin-bottom:14px;display:${regForm.collectionStatus==='partial'?'block':'none'}">
+          <label class="f-label ${bnClass}">${lang==='en'?'Amount Collected (৳)':'আদায়কৃত পরিমাণ (৳)'}</label>
+          <input type="number" id="reg-collectedAmt" value="${regForm.collectedAmt}" placeholder="9500"/>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label class="f-label ${bnClass}">${lang==='en'?'Miss Amount (৳) *':'মিস পরিমাণ (৳) *'}</label>
+          <input type="number" id="reg-targetAmt" value="${regForm.targetAmt}" placeholder="19000"/>
+        </div>
+
+        <div>
+          <label class="f-label ${bnClass}">${t('remarksF')}</label>
+          <textarea id="reg-remarks" rows="3" placeholder="${lang==='en'?'Optional notes…':'ঐচ্ছিক মন্তব্য...'}">${regForm.remarks}</textarea>
+        </div>
+      </div>
+
+      <div id="reg-err" style="display:none;color:#e53935;font-size:12px;font-weight:600;margin-bottom:10px" class="${bnClass}">${t('fillRequired')}</div>
+      <button id="btn-reg-submit" class="btn-primary ${bnClass}" style="margin-bottom:9px">${g?(lang==='en'?'Save Grace Period Record':'গ্রেস পিরিয়ড সংরক্ষণ করুন'):(lang==='en'?'Save Schedule Miss':'সংরক্ষণ করুন')}</button>
+      <button id="btn-reg-cancel" class="btn-secondary ${bnClass}">${t('cancelReg')}</button>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// NOTIFICATIONS & MENU POPUPS
+// ══════════════════════════════════════════════════════════════
+function renderNotifPopup(){
+  const bnClass=lang==="bn"?"bn":"";
+  const isBM=currentUser.role==="bm";
+  const d=scopedData();
+  let items=[];
+  if(isBM){
+    // FR-25: BM/ABM push is escalation-only — not the CDO's routine reason/re-miss worklist.
+    const escal = d.filter(r=>r.escalated);
+    items = escal.map(r=>({loanId:r.loanId,type:"escalate",
+      text:`${r.memberName} (${r.cdo} — ${r.cdoName}): ${lang==='en'?'Escalated — 2+ missed commitments':'এস্কেলেটেড — ২+ বার কমিটমেন্ট মিস'}`,
+      color:"#b71c1c"}));
+  } else {
+    // FR-17: CDO in-app alerts — Missed Commitment Date — plus BM follow-up comments on their records.
+    const remiss = d.filter(r=>getStatus(r)==="remiss");
+    const comments = NOTIFICATIONS.filter(n=>n.toCdoId===currentUser.cdoId);
+    items=[
+      ...comments.map(n=>({loanId:n.loanId,type:"comment",notifId:n.id,
+        text:`${n.byName} ${lang==='en'?'commented on':'মন্তব্য করেছেন'} ${n.memberName}: "${n.message.length>60?n.message.slice(0,60)+'…':n.message}"`,
+        color:"#1565c0", unread:!n.read})),
+      ...remiss.map(r=>({loanId:r.loanId,type:"remiss",text:`${r.memberName}: ${lang==='en'?'Missed commitment date':'কমিটমেন্ট তারিখ মিস'}`,color:"#7f0000"})),
+    ];
+  }
+  return `
+  <div id="notif-backdrop" style="position:fixed;inset:0;z-index:200">
+    <div id="notif-popup" class="popup" style="top:58px;right:52px;min-width:260px;max-width:310px;max-height:360px;overflow-y:auto">
+      <div style="font-size:11px;font-weight:800;color:#d6006e;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px" class="${bnClass}">${t('notifications')}</div>
+      <div style="font-size:9.5px;color:#bbb;margin-bottom:10px" class="${bnClass}">${isBM?(lang==='en'?'Escalation alerts only':'শুধুমাত্র এস্কেলেশন সতর্কতা'):(lang==='en'?'Your worklist + supervisor comments':'আপনার ওয়ার্কলিস্ট + সুপারভাইজর মন্তব্য')}</div>
+      ${items.length===0?`<div style="font-size:12px;color:#bbb" class="${bnClass}">${t('noNotif')}</div>`:
+        items.map(({loanId,type,text,color,notifId,unread})=>`
+        <div class="notif-item" data-loan-id="${loanId}" data-type="${type}" ${notifId?`data-notifid="${notifId}"`:""} style="font-size:12px;color:${color};font-weight:${unread?700:500};padding:8px 10px;border-bottom:1px solid #f9f0f9;line-height:1.4;cursor:pointer;border-radius:7px;margin-bottom:3px;display:flex;align-items:center;gap:7px;background:${unread?"#eef6ff":"transparent"}">
+          <span style="font-size:13px">${type==="escalate"?"🚨":type==="comment"?"💬":"⚠️"}</span>
+          <span class="${bnClass}">${text}</span>
+        </div>`).join("")}
+      <div style="font-size:10px;color:#ccc;text-align:center;margin-top:8px;padding-top:6px;border-top:1px solid #f0e0f0" class="${bnClass}">${lang==='en'?'Tap to navigate to client':'ক্লায়েন্টে যেতে ট্যাপ করুন'}</div>
+    </div>
+  </div>`;
+}
+function renderMenuPopup(){
+  const bnClass=lang==="bn"?"bn":"";
+  return `
+  <div id="menu-backdrop" style="position:fixed;inset:0;z-index:200">
+    <div class="popup" style="top:58px;right:14px;min-width:220px">
+      <div style="padding:6px 10px 10px;border-bottom:1px solid #f0e0f0;margin-bottom:6px">
+        <div style="font-size:13px;font-weight:700;color:#333">${lang==='bn'?currentUser.nameBn:currentUser.name}</div>
+        <div style="font-size:10.5px;color:#999">${currentUser.role==='bm'?t('bmRole'):currentUser.cdoId} · ${lang==='bn'?currentUser.branchBn:currentUser.branch}</div>
+      </div>
+      <div style="font-size:9.5px;font-weight:800;color:#bbb;text-transform:uppercase;letter-spacing:0.5px;padding:4px 10px" class="${bnClass}">${t('dbMenuTitle')}</div>
+      <button id="btn-export-db" style="width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;background:none;border:none;cursor:pointer;font-size:12.5px;font-weight:600;color:#444" class="${bnClass}">
+        <span style="font-size:15px">💾</span><span>${t('exportDbBtn')}</span>
+      </button>
+      <button id="btn-import-db" style="width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;background:none;border:none;cursor:pointer;font-size:12.5px;font-weight:600;color:#444" class="${bnClass}">
+        <span style="font-size:15px">📂</span><span>${t('importDbBtn')}</span>
+      </button>
+      <input type="file" id="import-db-file" accept="application/json" style="display:none"/>
+      <button id="btn-reset-db" style="width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;background:none;border:none;cursor:pointer;font-size:12.5px;font-weight:600;color:#e65100" class="${bnClass}">
+        <span style="font-size:15px">🔄</span><span>${t('resetDbBtn')}</span>
+      </button>
+      <div style="border-top:1px solid #f0e0f0;margin-top:6px;padding-top:6px">
+        <button id="btn-logout" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;background:none;border:none;cursor:pointer;font-size:13.5px;font-weight:700;color:#c8005e" class="${bnClass}">
+          <span style="font-size:16px">🚪</span><span>${t('logout')}</span>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// EVENT BINDING
+// ══════════════════════════════════════════════════════════════
+// Always show the user the direct result of an action — jumps straight to that record's
+// dedicated detail page. Used after any action that can change a record's status (Record
+// Collection, Update, Register). No more filter-clearing or scroll-into-view needed now
+// that the detail view is its own page rather than an inline-expanded list row.
+function revealRecord(loanId){
+  expandedRow=loanId;
+  render();
+}
+
+function bindEvents(){
+  const $=id=>document.getElementById(id);
+
+  // Lang toggle
+  if($("btn-lang")) $("btn-lang").onclick=()=>{lang=lang==="en"?"bn":"en";render();};
+
+  // Notif / Menu
+  if($("btn-notif")) $("btn-notif").onclick=()=>{showNotif=!showNotif;showMenu=false;render();};
+  if($("btn-menu")) $("btn-menu").onclick=()=>{showMenu=!showMenu;showNotif=false;render();};
+  const nb=$("notif-backdrop"); if(nb) nb.onclick=e=>{if(e.target===nb){showNotif=false;render();}};
+  const mb=$("menu-backdrop"); if(mb) mb.onclick=e=>{if(e.target===mb){showMenu=false;render();}};
+  if($("btn-logout")) $("btn-logout").onclick=()=>{
+    currentUser=null; showMenu=false; expandedRow=null; followUpEditRow=null;
+    collectRow=null; historyRow=null; confirmDeleteFollowUp=false;
+    search=""; filters={cdo:"All",voCode:"All",reason:"All",status:"All",targetDate:"",collectionDate:"",followUpStatus:"All"};
+    commitToday=true; dashboardExpanded=false; showFilters=false;
+    page=1; render();
+  };
+
+  // Database — export / import / reset
+  if($("btn-export-db")) $("btn-export-db").onclick=()=>{ exportDB(); showMenu=false; render(); };
+  if($("btn-import-db")) $("btn-import-db").onclick=()=>{ $("import-db-file")?.click(); };
+  if($("import-db-file")) $("import-db-file").onchange=e=>{
+    const file=e.target.files&&e.target.files[0];
+    if(file) importDBFromFile(file);
+  };
+  if($("btn-reset-db")) $("btn-reset-db").onclick=()=>{
+    if(confirm(t("resetDbConfirm"))){
+      resetDB();
+      currentUser=null; showMenu=false;
+      render();
+      toast(lang==="en"?"✅ Reset to seed data":"✅ মূল ডেটাতে রিসেট হয়েছে");
+    }
+  };
+
+  // Time Simulator
+  if($("btn-timesim")) $("btn-timesim").onclick=()=>{ showTimeSim=true; showMenu=false; showNotif=false; render(); };
+  if($("btn-close-timesim")) $("btn-close-timesim").onclick=()=>{ showTimeSim=false; render(); };
+  const tso=$("time-sim-overlay"); if(tso) tso.onclick=e=>{ if(e.target===tso){ showTimeSim=false; render(); } };
+  if($("btn-timesim-apply")) $("btn-timesim-apply").onclick=()=>{
+    const val=$("timesim-input")?.value;
+    if(!val) return;
+    const beforeScoped=scopedData().length;
+    TODAY=new Date(val);
+    runTimeSweep();
+    const droppedScoped=beforeScoped-scopedData().length;
+    showTimeSim=false;
+    render();
+    toast(lang==="en"?`✅ Time set to ${fmtDateTime(TODAY)}${droppedScoped?` — ${droppedScoped} Grace record(s) dropped`:""}`:`✅ সময় নির্ধারিত হয়েছে${droppedScoped?` — ${droppedScoped}টি গ্রেস রেকর্ড বাদ দেওয়া হয়েছে`:""}`);
+  };
+  document.querySelectorAll(".timesim-quick").forEach(b=>{
+    b.onclick=()=>{
+      const days=parseInt(b.dataset.days);
+      const beforeScoped=scopedData().length;
+      TODAY=new Date(TODAY.getTime()+days*86400000);
+      runTimeSweep();
+      const droppedScoped=beforeScoped-scopedData().length;
+      showTimeSim=false;
+      render();
+      toast(lang==="en"?`✅ +${days}d — now ${fmtDateTime(TODAY)}${droppedScoped?` — ${droppedScoped} Grace record(s) dropped`:""}`:`✅ ${days} দিন এগিয়ে গেছে${droppedScoped?` — ${droppedScoped}টি গ্রেস রেকর্ড বাদ`:""}`);
+    };
+  });
+
+  // Tab bar
+  document.querySelectorAll(".tab-btn").forEach(b=>{
+    b.onclick=()=>{activeTab=b.dataset.tab;expandedRow=null;if(activeTab==="register")resetRegForm();render();};
+  });
+  if($("btn-fab-new")) $("btn-fab-new").onclick=()=>{activeTab="register";resetRegForm();render();};
+
+  // Search
+  if($("search-input")) $("search-input").oninput=e=>{search=e.target.value;page=1;if(search.trim())dashboardExpanded=true;render();};
+
+  // Filter / view-all / back toggles
+  if($("btn-dismiss-push")) $("btn-dismiss-push").onclick=()=>{dailyPushDismissed=true;render();};
+  if($("btn-filter")) $("btn-filter").onclick=()=>{showFilters=!showFilters;render();};
+  if($("btn-view-all")) $("btn-view-all").onclick=()=>{dashboardExpanded=true;render();};
+  if($("btn-back-overview")) $("btn-back-overview").onclick=()=>{dashboardExpanded=false;showFilters=false;render();};
+  document.querySelectorAll(".stat-card-click").forEach(el=>{
+    el.onclick=()=>{
+      const statusVal=el.dataset.status;
+      filters.status="All"; filters.reason="All";
+      if(statusVal!=="All") filters.status=statusVal;
+      commitToday=false; // a stat tile spans all records, not just today's commitments
+      dashboardExpanded=true; page=1; render();
+    };
+  });
+  if($("btn-clear")) $("btn-clear").onclick=()=>{
+    search="";filters={cdo:"All",voCode:"All",reason:"All",status:"All",targetDate:"",collectionDate:"",followUpStatus:"All"};commitToday=false;page=1;render();
+  };
+  if($("btn-toggle-commit-today")) $("btn-toggle-commit-today").onclick=()=>{ commitToday=!commitToday; page=1; render(); };
+
+  // Notification item click -> navigate straight to the record's detail page
+  document.querySelectorAll(".notif-item").forEach(el=>{
+    el.onclick=e=>{
+      e.stopPropagation();
+      const loanId=el.dataset.loanId;
+      const type=el.dataset.type;
+      const row=DATA.find(r=>r.loanId===loanId);
+      if(!row) return;
+      expandedRow=loanId;
+      showNotif=false;
+      if(type==="comment"){
+        const nid=parseInt(el.dataset.notifid);
+        const n=NOTIFICATIONS.find(x=>x.id===nid);
+        if(n) n.read=true;
+      }
+      activeTab="dashboard";
+      render();
+    };
+  });
+
+  // Filter dropdowns
+  const bindSel=(id,key)=>{const el=$(id);if(el)el.onchange=e=>{filters[key]=e.target.value;page=1;render();};};
+  bindSel("f-cdo","cdo"); bindSel("f-voCode","voCode"); bindSel("f-reason","reason");
+  bindSel("f-targetDate","targetDate"); bindSel("f-collectionDate","collectionDate");
+  bindSel("f-followUp","followUpStatus");
+
+  // Custom status dropdown
+  const sdb=$("status-dropdown-btn"), sdm=$("status-dropdown-menu");
+  if(sdb&&sdm){
+    sdb.onclick=e=>{e.stopPropagation();sdm.style.display=sdm.style.display==="block"?"none":"block";};
+    document.querySelectorAll(".status-opt").forEach(el=>{
+      el.onclick=()=>{filters.status=el.dataset.val;page=1;sdm.style.display="none";render();};
+    });
+    document.addEventListener("click",function closeSD(){sdm&&(sdm.style.display="none");document.removeEventListener("click",closeSD);},true);
+  }
+
+  // Per page
+  document.querySelectorAll(".pg-size-btn").forEach(b=>{b.onclick=()=>{perPage=parseInt(b.dataset.n);page=1;render();};});
+
+  // Card expand
+  document.querySelectorAll(".card-header").forEach(h=>{h.onclick=()=>{expandedRow=h.dataset.loanId;render();};});
+  if($("btn-detail-back")) $("btn-detail-back").onclick=()=>{expandedRow=null;render();};
+
+  const ov=$("overlay"); if(ov) ov.onclick=e=>{if(e.target===ov){followUpEditRow=null;collectRow=null;render();}};
+
+  // Record Collection (CDO) — closes the loop on a commitment date, or (during an active
+  // Grace Period) just logs the payment with nothing else changing.
+  document.querySelectorAll(".collect-btn").forEach(b=>{b.onclick=e=>{e.stopPropagation();const loanId=b.dataset.loanId;collectRow=DATA.find(r=>r.loanId===loanId)||null;render();};});
+  if($("btn-close-collect")) $("btn-close-collect").onclick=()=>{collectRow=null;render();};
+  const collectAmtEl=$("collect-amount");
+  const updateCollectPreview=()=>{
+    if(!collectRow) return;
+    const row=DATA.find(r=>r.loanId===collectRow.loanId);
+    if(getStatus(row)==="grace") return; // grace mode has no outcome preview — it's always just "due decreases"
+    const amt=parseFloat($("collect-amount")?.value)||0;
+    const due=row.targetAmount-getCollected(row);
+    const willFullyResolve = amt>=due;
+    const noteEl=$("collect-outcome-note");
+    const wrapEl=$("collect-new-commit-wrap");
+    const reasonWrapEl=$("collect-partial-reason-wrap");
+    if(noteEl) noteEl.textContent = willFullyResolve ? t("fullyResolvedNote") : "";
+    if(wrapEl) wrapEl.style.display = willFullyResolve ? "none" : "block";
+    if(reasonWrapEl) reasonWrapEl.style.display = willFullyResolve ? "none" : "block";
+  };
+  if(collectAmtEl) collectAmtEl.oninput=updateCollectPreview;
+  const collectPartialReasonSel=$("collect-partial-reason");
+  if(collectPartialReasonSel) collectPartialReasonSel.onchange=e=>{
+    const noteWrap=$("collect-partial-reason-note-wrap"); if(noteWrap) noteWrap.style.display=e.target.value==="Other"?"block":"none";
+    const err=$("collect-partial-reason-err"); if(err) err.style.display="none";
+  };
+  const collectPartialReasonNoteEl=$("collect-partial-reason-note");
+  if(collectPartialReasonNoteEl) collectPartialReasonNoteEl.oninput=e=>{
+    const err=$("collect-partial-reason-note-err"); if(err&&e.target.value.trim()) err.style.display="none";
+  };
+  ["collect-new-commit-from","collect-new-commit-to"].forEach(id=>{
+    const el=$(id); if(el) el.oninput=()=>{ const e=$("collect-newcommit-err"); if(e) e.style.display="none"; };
+  });
+  if($("btn-save-collect")) $("btn-save-collect").onclick=()=>{
+    const row=DATA.find(r=>r.loanId===collectRow.loanId);
+    const cDate=$("collect-date")?.value||"";
+    const cAmt=parseFloat($("collect-amount")?.value)||0;
+    if(!cDate){toast(t("fillRequired"));return;}
+
+    // Grace Period branch — per spec: "just the due amount will decrease and nothing else."
+    // No reason, no commitment date, no missed-commitment count, no escalation.
+    if(getStatus(row)==="grace"){
+      row.payments.push({date:cDate, amount:cAmt});
+      pushLog(row, `Grace Period collection recorded: ${fmt(cAmt)} on ${cDate}`);
+      const loanId=row.loanId; collectRow=null;
+      revealRecord(loanId);
+      toast(lang==="en"?"✅ Collection recorded — due amount updated":"✅ আদায় রেকর্ড হয়েছে — বকেয়া হালনাগাদ হয়েছে");
+      return;
+    }
+
+    const dueBefore=row.targetAmount-getCollected(row);
+    const willStillBeDue = (getCollected(row)+cAmt) < row.targetAmount;
+    let newCommitFrom="", newCommitTo="", newReason="", newReasonNote="";
+    if(willStillBeDue){
+      newCommitFrom=$("collect-new-commit-from")?.value||"";
+      newCommitTo=$("collect-new-commit-to")?.value||"";
+      newReason=$("collect-partial-reason")?.value||"";
+      newReasonNote=$("collect-partial-reason-note")?.value.slice(0,200)||"";
+      let valid=true;
+      if(!newReason){ const e=$("collect-partial-reason-err"); if(e) e.style.display="block"; valid=false; }
+      if(newReason==="Other" && !newReasonNote.trim()){ const e=$("collect-partial-reason-note-err"); if(e) e.style.display="block"; valid=false; }
+      if(!newCommitFrom||!newCommitTo){ const e=$("collect-newcommit-err"); if(e) e.style.display="block"; valid=false; }
+      if(!valid) return;
+    }
+    row.payments.push({date:cDate, amount:cAmt});
+    pushLog(row, `Collection recorded: ${fmt(cAmt)} on ${cDate}`);
+    if(willStillBeDue){
+      // This commitment cycle is being closed out without full recovery — counts as a missed commitment
+      if(row.commitmentTo && cAmt<dueBefore){
+        row.missedCommitmentCount=(row.missedCommitmentCount||0)+1;
+        row.remissLocked=true;
+        row.remissHistory=row.remissHistory||[];
+        row.remissHistory.push({commitmentFrom:row.commitmentFrom, commitmentTo:row.commitmentTo, detectedAt:nowStr(), outcome:cAmt>0?"partial":"missed", dueAtTime:dueBefore-cAmt, reason:newReason||row.reason||""});
+        row.lastCountedCommitmentTo=row.commitmentTo;
+        if(row.missedCommitmentCount>=2) row.escalated=true;
+      }
+      if(row.commitmentFrom && row.commitmentTo){
+        row.commitmentHistory=row.commitmentHistory||[];
+        row.commitmentHistory.push({from:row.commitmentFrom, to:row.commitmentTo, setOn:"—"});
+      }
+      row.commitmentFrom=newCommitFrom; row.commitmentTo=newCommitTo;
+      // Update the reason to reflect why this round only came in partial/none — same pattern as the commitment date
+      row.reason=newReason;
+      row.reasonNote = newReason==="Other" ? newReasonNote : "";
+      const loanId=row.loanId; collectRow=null;
+      revealRecord(loanId);
+      toast(lang==="en"?"✅ Collection recorded — new commitment date set":"✅ আদায় রেকর্ড হয়েছে — নতুন কমিটমেন্ট তারিখ নির্ধারিত হয়েছে");
+      if(row.escalated) toast(lang==="en"?"🚨 Escalated to Branch Manager":"🚨 ব্রাঞ্চ ম্যানেজারের কাছে এস্কেলেটেড");
+    } else {
+      const loanId=row.loanId; collectRow=null;
+      revealRecord(loanId);
+      toast(lang==="en"?"✅ Fully collected — schedule miss resolved":"✅ সম্পূর্ণ আদায় হয়েছে — সিডিউল মিস সমাধান হয়েছে");
+    }
+  };
+
+  // Member History modal
+  document.querySelectorAll(".history-btn").forEach(b=>{b.onclick=e=>{e.stopPropagation();const loanId=b.dataset.loanId;historyRow=DATA.find(r=>r.loanId===loanId)||null;render();};});
+  if($("btn-close-history")) $("btn-close-history").onclick=()=>{historyRow=null;render();};
+  const ho=$("history-overlay"); if(ho) ho.onclick=e=>{if(e.target===ho){historyRow=null;render();}};
+
+  // Follow-up (BM)
+  document.querySelectorAll(".fu-btn").forEach(b=>{b.onclick=e=>{e.stopPropagation();const loanId=b.dataset.loanId;followUpEditRow=DATA.find(r=>r.loanId===loanId)||null;render();};});
+  if($("btn-close-fu")) $("btn-close-fu").onclick=()=>{followUpEditRow=null;render();};
+  if($("btn-save-fu")) $("btn-save-fu").onclick=()=>{
+    const date=$("fu-date")?.value||"";
+    const comment=$("fu-comment")?.value||"";
+    if(!date||!comment){toast(t("fillRequired"));return;}
+    const row=DATA.find(r=>r.loanId===followUpEditRow.loanId);
+    row.followUp={date,comment,by:currentUser.name,at:nowStr()};
+    pushLog(row,"Follow-up added/updated");
+    notifyCdoOfComment(row, currentUser.name, comment);
+    followUpEditRow=null; render();
+    toast(lang==="en"?"✅ Follow-up saved — CDO notified":"✅ ফলো-আপ সংরক্ষিত হয়েছে — সিডিও-কে জানানো হয়েছে");
+  };
+  // Delete follow-up comment (BM only, own comment)
+  document.querySelectorAll(".fu-delete-btn").forEach(b=>{b.onclick=e=>{e.stopPropagation();confirmDeleteFollowUp=b.dataset.loanId;render();};});
+  document.querySelectorAll(".fu-delete-cancel").forEach(b=>{b.onclick=e=>{e.stopPropagation();confirmDeleteFollowUp=false;render();};});
+  document.querySelectorAll(".fu-delete-confirm").forEach(b=>{b.onclick=e=>{
+    e.stopPropagation();
+    const loanId=b.dataset.loanId;
+    const row=DATA.find(r=>r.loanId===loanId);
+    if(row){ row.followUp=null; pushLog(row,"Follow-up comment deleted"); }
+    confirmDeleteFollowUp=false; render();
+    toast(t("commentDeleted"));
+  };});
+
+  // Pagination
+  if($("pg-first")) $("pg-first").onclick=()=>{page=1;render();};
+  if($("pg-prev")) $("pg-prev").onclick=()=>{page=Math.max(1,page-1);render();};
+  if($("pg-next")) $("pg-next").onclick=()=>{const f=getFiltered();page=Math.min(Math.ceil(f.length/perPage)||1,page+1);render();};
+  if($("pg-last")) $("pg-last").onclick=()=>{const f=getFiltered();page=Math.ceil(f.length/perPage)||1;render();};
+  document.querySelectorAll(".pg-num").forEach(b=>{b.onclick=()=>{page=parseInt(b.dataset.n);render();};});
+
+  // Register form — every field persists straight into regForm as the user types,
+  // so a full re-render (opening the bell, etc.) never wipes what's been entered.
+  if($("btn-reg-cancel")) $("btn-reg-cancel").onclick=()=>{activeTab="dashboard";render();};
+  if($("btn-reg-back")) $("btn-reg-back").onclick=()=>{activeTab="dashboard";render();};
+
+  if($("btn-qr-scan")) $("btn-qr-scan").onclick=()=>{toast(lang==="en"?"📷 QR scanning not available in this demo":"📷 এই ডেমোতে কিউআর স্ক্যান উপলব্ধ নয়");};
+
+  const bindRegField=(id,key,parse)=>{
+    const el=$(id); if(!el) return;
+    el.oninput=e=>{ regForm[key] = parse ? parse(e.target.value) : e.target.value; };
+  };
+  bindRegField("reg-voCode","voCode");
+  bindRegField("reg-memberName","memberName");
+  bindRegField("reg-memberNo","memberNo");
+  bindRegField("reg-phone","phone");
+  bindRegField("reg-collectedAmt","collectedAmt");
+  bindRegField("reg-targetAmt","targetAmt");
+  bindRegField("reg-remarks","remarks");
+  const regVoSel=$("reg-voCode"); if(regVoSel) regVoSel.onchange=e=>{regForm.voCode=e.target.value;};
+
+  // Disbursement Date drives Grace Period (see isGraceActive). It's pre-filled from the
+  // selected loan's typical tenure relative to the VO Collection Date, but the CDO can edit
+  // it directly — e.g. to deliberately test Grace Period by setting it within the last 15 days.
+  const computeDefaultDisb=(loan,targetDateStr)=>{
+    if(!loan) return "";
+    const base = targetDateStr ? new Date(targetDateStr) : new Date(TODAY);
+    base.setMonth(base.getMonth()-loan.monthsAgo);
+    return base.toISOString().split("T")[0];
+  };
+  // Updates the Disbursement Date field, the Grace Period Yes/No tiles, and whether Miss
+  // Information is shown — all via direct DOM writes (no full render()) so focus/cursor
+  // position in whatever's being typed into is never lost.
+  const updateGraceUI=()=>{
+    const el=$("reg-disbursementDate"); if(el) el.value=regForm.disbursementDate;
+    const g=regFormIsGrace();
+    const box=$("reg-grace-box");
+    if(box){ box.style.background=g?'#f3e5f5':'#fff'; box.style.borderColor=g?'#ce93d8':'#e0d0ea'; }
+    const yesPill=$("reg-grace-yes-pill");
+    if(yesPill){ yesPill.style.background=g?'#7b1fa2':'#fdf5f9'; yesPill.style.color=g?'#fff':'#7b1fa2'; }
+    const noPill=$("reg-grace-no-pill");
+    if(noPill){ noPill.style.background=!g?'#d6006e':'#fdf5f9'; noPill.style.color=!g?'#fff':'#c8005e'; }
+    const note=$("reg-grace-note"); if(note) note.style.display=g?"block":"none";
+    const missInfo=$("reg-miss-info-section"); if(missInfo) missInfo.style.display=g?"none":"block";
+    const submitBtn=$("btn-reg-submit");
+    if(submitBtn) submitBtn.textContent=g?(lang==='en'?'Save Grace Period Record':'গ্রেস পিরিয়ড সংরক্ষণ করুন'):(lang==='en'?'Save Schedule Miss':'সংরক্ষণ করুন');
+  };
+  const disbEl=$("reg-disbursementDate");
+  if(disbEl) disbEl.oninput=e=>{ regForm.disbursementDate=e.target.value; regForm.disbursementDateTouched=true; updateGraceUI(); };
+
+  if($("reg-targetDate")) $("reg-targetDate").oninput=e=>{
+    regForm.targetDate=e.target.value;
+    if(!regForm.disbursementDateTouched){
+      regForm.disbursementDate=computeDefaultDisb(loanById(regForm.loanProductId),regForm.targetDate);
+      updateGraceUI();
+    }
+  };
+
+  // Loan Selection -> preview
+  const loanSel=$("reg-loan");
+  if(loanSel) loanSel.onchange=e=>{
+    regForm.loanProductId=e.target.value;
+    const loan=loanById(e.target.value);
+    const prev=$("reg-loan-preview");
+    if(loan&&prev){
+      prev.style.display="block";
+      prev.innerHTML = `${t('disbursedAmount')}: <b>${fmt(loan.disbursedAmount)}</b> &nbsp;·&nbsp; ${lang==='en'?'Standard installment':'নিয়মিত কিস্তি'}: <b>${fmt(loan.installment)}</b>`;
+      // Auto-fill the Miss/Installment Amount from state, not the DOM — the field may not exist
+      // in the DOM yet if the Grace Period prompt hasn't been answered, since that section gates
+      // Miss Information's visibility. Setting regForm directly means it's correct whenever that
+      // section does render.
+      if(!regForm.targetAmt){
+        regForm.targetAmt=String(loan.installment);
+        const amtEl=$("reg-targetAmt"); if(amtEl) amtEl.value=loan.installment;
+      }
+    } else if(prev){ prev.style.display="none"; }
+    if(!regForm.disbursementDateTouched){
+      regForm.disbursementDate=computeDefaultDisb(loan,regForm.targetDate);
+      updateGraceUI();
+    }
+  };
+
+  ["reg-commitFrom","reg-commitTo"].forEach(id=>{
+    const el=$(id); if(!el) return;
+    el.oninput=e=>{
+      regForm[id==="reg-commitFrom"?"commitFrom":"commitTo"]=e.target.value;
+      const ce=$("reg-commit-err"); if(ce&&$("reg-commitFrom")?.value&&$("reg-commitTo")?.value) ce.style.display="none";
+    };
+  });
+
+  // Reason dropdown
+  const regReasonSel=$("reg-reason");
+  if(regReasonSel) regReasonSel.onchange=e=>{
+    regForm.reason=e.target.value;
+    const noteWrap=$("reg-reason-note-wrap"); if(noteWrap) noteWrap.style.display=regForm.reason==="Other"?"block":"none";
+    const err=$("reg-reason-err"); if(err) err.style.display="none";
+  };
+  const regReasonNoteEl=$("reg-reason-note");
+  if(regReasonNoteEl) regReasonNoteEl.oninput=e=>{
+    regForm.reasonNote=e.target.value;
+    const err=$("reg-reason-note-err"); if(err&&e.target.value.trim()) err.style.display="none";
+  };
+
+  // Collection status chips (Partial / Full miss)
+  document.querySelectorAll(".reg-collection-chip").forEach(b=>{
+    b.onclick=()=>{
+      regForm.collectionStatus=b.dataset.key;
+      const err=$("reg-collection-err"); if(err) err.style.display="none";
+      const collectedWrap=$("reg-collected-amt-wrap"); if(collectedWrap) collectedWrap.style.display=regForm.collectionStatus==="partial"?"block":"none";
+      document.querySelectorAll(".reg-collection-chip").forEach(x=>{
+        const on=x.dataset.key===regForm.collectionStatus;
+        x.style.background=on?"#d6006e":"#fdf5f9"; x.style.color=on?"#fff":"#c8005e";
+      });
+    };
+  });
+
+  if($("btn-reg-submit")) $("btn-reg-submit").onclick=()=>{
+    const voCode=$("reg-voCode")?.value;
+    const memberName=$("reg-memberName")?.value.trim();
+    const memberNo=$("reg-memberNo")?.value.trim();
+    const phone=$("reg-phone")?.value.trim();
+    const loanProductId=$("reg-loan")?.value;
+    const disbursementDate=$("reg-disbursementDate")?.value||regForm.disbursementDate;
+    const isGrace=regFormIsGrace();
+    const loan=loanById(loanProductId);
+
+    // Grace Period needs nothing beyond who/what/when-disbursed — no VO Collection Date,
+    // Reason, Commitment Date or Collection Status. Miss Information is hidden for exactly
+    // this reason, so read from it only when it's actually showing (non-Grace).
+    const targetDate = isGrace ? nowDateStr() : $("reg-targetDate")?.value;
+    const targetAmt = isGrace ? (loan?loan.installment:0) : parseFloat($("reg-targetAmt")?.value);
+    const commitFrom = isGrace ? "" : ($("reg-commitFrom")?.value||"");
+    const commitTo = isGrace ? "" : ($("reg-commitTo")?.value||"");
+    const collectedAmt = isGrace ? 0 : (parseFloat($("reg-collectedAmt")?.value)||0);
+    const remarks = isGrace ? "" : ($("reg-remarks")?.value.trim()||"");
+    const reason = isGrace ? "" : ($("reg-reason")?.value||"");
+    const reasonNote = isGrace ? "" : ($("reg-reason-note")?.value.slice(0,200)||"");
+    const collectionStatus = isGrace ? "n/a" : regForm.collectionStatus;
+
+    let ok = voCode&&memberName&&memberNo&&phone&&loanProductId&&disbursementDate
+      && (isGrace ? true : (targetDate && targetAmt && reason && collectionStatus && commitFrom && commitTo
+          && (reason!=="Other" || reasonNote.trim())));
+    if(!ok){
+      const errEl=$("reg-err"); if(errEl) errEl.style.display="block";
+      if(!isGrace){
+        const rErr=$("reg-reason-err"); if(rErr&&!reason) rErr.style.display="block";
+        const rnErr=$("reg-reason-note-err"); if(rnErr&&reason==="Other"&&!reasonNote.trim()) rnErr.style.display="block";
+        const cErr=$("reg-collection-err"); if(cErr&&!collectionStatus) cErr.style.display="block";
+        const cmErr=$("reg-commit-err"); if(cmErr&&(!commitFrom||!commitTo)) cmErr.style.display="block";
+      }
+      return;
+    }
+
+    // Collection Status supplies what ERP would normally have reported (FR-02 still classifies automatically from this)
+    let payments=[];
+    if(!isGrace && collectionStatus==="partial") payments=[{date:targetDate,amount:collectedAmt||Math.round(targetAmt/2)}];
+
+    const newRow = mkRow({
+      voCode, memberNo, memberName, phone,
+      disbursementDate, disbursedAmount:loan.disbursedAmount,
+      targetDate, targetAmount:targetAmt,
+      reason, reasonNote,
+      commitmentFrom:commitFrom, commitmentTo:commitTo,
+      payments, remarks,
+      loanProductId:loan.id, loanLabel:loan.label,
+      cdo:currentUser.cdoId, cdoName:currentUser.name,
+      previousMisses:0, submissionDate:nowDateStr(),
+    });
+    pushLog(newRow,"Created via manual Register entry (no-ERP mode)");
+    DATA.push(newRow);
+    runTimeSweep(); // catch it immediately if the CDO entered a commitment range already in the past
+    resetRegForm();
+    activeTab="dashboard";
+    revealRecord(newRow.loanId);
+    toast(t("regSaved"));
+  };
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════════════
+// Boot sequence:
+//  1. Browser storage (most recent state) wins if present.
+//  2. Otherwise, try fetching ./database.json — this only succeeds when the app is served
+//     over http(s):// (a local server); browsers block fetch() for file:// for security,
+//     so this silently falls through when you just double-click the file.
+//  3. Otherwise, fall back to the built-in generated seed data.
+// ══════════════════════════════════════════════════════════════
+async function bootApp(){
+  if(loadDB()){
+    runTimeSweep();
+  } else {
+    let loadedFromFile=false;
+    try{
+      const resp=await fetch("./database.json");
+      if(resp.ok){
+        const db=await resp.json();
+        if(db && Array.isArray(db.data)){
+          TODAY = new Date(db.today);
+          __loanSeq = db.loanSeq||0;
+          __notifId = db.notifSeq||0;
+          DATA = db.data;
+          NOTIFICATIONS = db.notifications||[];
+          loadedFromFile=true;
+        }
+      }
+    }catch(e){ /* file:// (fetch blocked) or database.json missing — fall through */ }
+
+    if(!loadedFromFile){
+      DATA = generateData();
+      DATA.filter(r=>r.followUp).forEach(r=>{
+        notifyCdoOfComment(r, r.followUp.by, r.followUp.comment);
+        NOTIFICATIONS[0].read = true;
+        NOTIFICATIONS[0].at = r.followUp.at;
+      });
+    }
+    runTimeSweep();
+    saveDB();
+  }
+
+  // Deep-link auto-login from the landing page (?role=cdo or ?role=bm)
+  try{
+    const params=new URLSearchParams(location.search);
+    const roleParam=params.get("role");
+    if(roleParam==="cdo"){ currentUser=USERS["1234"]; dailyPushDismissed=false; }
+    else if(roleParam==="bm"){ currentUser=USERS["9999"]; dailyPushDismissed=true; }
+  }catch(e){}
+
+  render();
+}
+bootApp();
+</script>
+</body>
+</html>

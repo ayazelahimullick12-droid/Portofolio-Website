@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>brac QR Generator</title>
+<link rel="icon" href="assets/brac-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <img src="assets/brac-icon.png" alt="brac" class="brand-mark" />
+    <div class="brand-text">
+      <h1>brac QR Generator</h1>
+      <p>Drop a link, style it, download your QR code.</p>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel controls" aria-label="QR code options">
+    <div class="field-group">
+      <label for="data">Link or text</label>
+      <input id="data" type="text" placeholder="https://example.com" autocomplete="off" />
+      <p class="hint">Anything a QR code can hold: a URL, phone number, Wi-Fi text, etc.</p>
+    </div>
+
+    <div class="field-group">
+      <label>Quick styles</label>
+      <div class="preset-row" id="presetRow">
+        <button type="button" class="preset-btn" data-preset="classicPink">Classic pink</button>
+        <button type="button" class="preset-btn" data-preset="roundDots">Round dots</button>
+        <button type="button" class="preset-btn" data-preset="circleFrame">Circle · frame</button>
+        <button type="button" class="preset-btn" data-preset="circleLogoRing">Circle · logo ring</button>
+        <button type="button" class="preset-btn" data-preset="plain">Plain B/W</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Shape</label>
+      <div class="segmented" id="shapeSeg">
+        <button type="button" class="seg-btn active" data-value="square">Square</button>
+        <button type="button" class="seg-btn" data-value="circle">Circle</button>
+      </div>
+    </div>
+
+    <div class="field-group" id="borderField" hidden>
+      <label for="borderStyle">Decorative border (circle only)</label>
+      <select id="borderStyle">
+        <option value="none">None</option>
+        <option value="frame">brac frame (brand gradient)</option>
+        <option value="logoRing">brac logo repeated around border</option>
+      </select>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label for="dotsType">Dot style</label>
+        <select id="dotsType">
+          <option value="square">Square</option>
+          <option value="dots">Dots</option>
+          <option value="rounded" selected>Rounded</option>
+          <option value="classy">Classy</option>
+          <option value="classy-rounded">Classy rounded</option>
+          <option value="extra-rounded">Extra rounded</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="cornersSquareType">Corner square style</label>
+        <select id="cornersSquareType">
+          <option value="square">Square</option>
+          <option value="dot">Dot</option>
+          <option value="rounded">Rounded</option>
+          <option value="extra-rounded" selected>Extra rounded</option>
+          <option value="dots">Dots</option>
+          <option value="classy">Classy</option>
+          <option value="classy-rounded">Classy rounded</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="cornersDotType">Corner dot style</label>
+        <select id="cornersDotType">
+          <option value="square">Square</option>
+          <option value="dot" selected>Dot</option>
+          <option value="rounded">Rounded</option>
+          <option value="extra-rounded">Extra rounded</option>
+          <option value="dots">Dots</option>
+          <option value="classy">Classy</option>
+          <option value="classy-rounded">Classy rounded</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label for="dotsColor">Dots colour</label>
+        <input id="dotsColor" type="color" value="#c2006b" />
+      </div>
+      <div class="field-group">
+        <label for="cornersSquareColor">Corner square colour</label>
+        <input id="cornersSquareColor" type="color" value="#8e0050" />
+      </div>
+      <div class="field-group">
+        <label for="cornersDotColor">Corner dot colour</label>
+        <input id="cornersDotColor" type="color" value="#e6007e" />
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label for="bgColor">Background colour</label>
+        <input id="bgColor" type="color" value="#ffffff" />
+      </div>
+      <div class="field-group checkbox-field">
+        <label><input id="bgTransparent" type="checkbox" /> Transparent background</label>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Centre image</label>
+      <div class="segmented" id="imageSeg">
+        <button type="button" class="seg-btn active" data-value="none">None</button>
+        <button type="button" class="seg-btn" data-value="custom">Upload my own</button>
+      </div>
+      <input id="imageUpload" type="file" accept="image/*" hidden />
+      <p class="hint" id="ringNoImageHint" hidden>Upload an image above to place it around the border.</p>
+    </div>
+
+    <div class="field-row" id="imageOptionsRow">
+      <div class="field-group">
+        <label for="imageSize">Logo size <span id="imageSizeVal">35%</span></label>
+        <input id="imageSize" type="range" min="10" max="50" value="35" />
+      </div>
+      <div class="field-group checkbox-field">
+        <label><input id="hideBgDots" type="checkbox" checked /> Hide dots behind logo</label>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label for="ecLevel">Error correction</label>
+        <select id="ecLevel">
+          <option value="L">L (7%)</option>
+          <option value="M">M (15%)</option>
+          <option value="Q">Q (25%)</option>
+          <option value="H" selected>H (30% — best with a logo)</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="qrSize">Output size (px) <span id="qrSizeVal">1000</span></label>
+        <input id="qrSize" type="range" min="300" max="2000" step="50" value="1000" />
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label for="fileName">File name</label>
+      <input id="fileName" type="text" value="brac-qr-code" />
+    </div>
+  </section>
+
+  <section class="panel preview" aria-label="QR code preview">
+    <div class="preview-card">
+      <div id="qrHost" class="qr-host">
+        <p class="placeholder">Enter a link to see your QR code</p>
+      </div>
+    </div>
+    <div class="download-row">
+      <button type="button" class="download-btn primary" data-ext="png">Download PNG</button>
+      <button type="button" class="download-btn" data-ext="svg">SVG</button>
+      <button type="button" class="download-btn" data-ext="jpeg">JPEG</button>
+      <button type="button" class="download-btn" data-ext="webp">WEBP</button>
+    </div>
+    <p class="scan-note" id="scanNote"></p>
+  </section>
+</main>
+
+<footer class="footer">brac internal tool — generate a styled QR code for any link.</footer>
+
+<script src="vendor/qr-code-styling.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BRAC DCS — Schedule Miss Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@500&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:linear-gradient(160deg,#c8005e 0%,#7b1fa2 100%);min-height:100vh;color:#fff;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'DM Mono',monospace}
+  a{text-decoration:none;color:inherit}
+
+  #wrap{max-width:1180px;margin:0 auto;padding:56px 24px 70px}
+  #hero{text-align:center;margin-bottom:48px}
+  #logo{width:64px;height:64px;border-radius:18px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px}
+  h1{font-size:30px;font-weight:800;letter-spacing:-0.5px}
+  #hero p{color:rgba(255,255,255,0.8);font-size:14px;margin-top:8px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.5}
+
+  #cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  @media (max-width:900px){ #cards{grid-template-columns:1fr} #wrap{padding:40px 18px 56px} }
+
+  .card{background:#fff;color:#222;border-radius:20px;padding:28px 26px;box-shadow:0 20px 50px rgba(0,0,0,0.25);display:flex;flex-direction:column;transition:transform 0.15s ease}
+  .card:hover{transform:translateY(-4px)}
+  .card-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}
+  .card-platform{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;padding:3px 9px;border-radius:20px;display:inline-block;margin-bottom:10px;width:fit-content}
+  .card h2{font-size:18px;font-weight:800;margin-bottom:4px}
+  .card .role-sub{font-size:12px;color:#999;margin-bottom:14px}
+  .card ul{list-style:none;margin-bottom:20px;flex:1}
+  .card li{font-size:12px;color:#555;padding:4px 0;padding-left:18px;position:relative;line-height:1.4}
+  .card li::before{content:"✓";position:absolute;left:0;font-weight:800}
+  .card-btn{border:none;border-radius:11px;padding:12px;font-size:13.5px;font-weight:700;cursor:pointer;text-align:center;color:#fff;display:block}
+
+  .cdo .card-icon{background:#fce4ec}
+  .cdo .card-platform{background:#fce4ec;color:#c8005e}
+  .cdo .card-btn{background:linear-gradient(135deg,#c8005e,#e91e8c)}
+
+  .bm .card-icon{background:#e3f2fd}
+  .bm .card-platform{background:#e3f2fd;color:#1565c0}
+  .bm .card-btn{background:linear-gradient(135deg,#1565c0,#42a5f5)}
+
+  .portal .card-icon{background:#ede7f6}
+  .portal .card-platform{background:#ede7f6;color:#5e35b1}
+  .portal .card-btn{background:linear-gradient(135deg,#5e35b1,#8561c5)}
+
+  #footnote{text-align:center;margin-top:40px;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.6;max-width:640px;margin-left:auto;margin-right:auto}
+  #org-chart{margin-top:44px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:16px;padding:20px 24px}
+  #org-chart h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.7);margin-bottom:14px;font-weight:700}
+  .chain{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px}
+  .chain-node{background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:6px 12px;font-weight:700}
+  .chain-arrow{color:rgba(255,255,255,0.5)}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="hero">
+    <div id="logo">🏦</div>
+    <h1>BRAC DCS — Schedule Miss Register</h1>
+    <p>Choose your role to open the module. CDO and BM run as the DCS mobile app; AM, RM, PM, and HO Admin use the DCS Web Portal.</p>
+  </div>
+
+  <div id="cards">
+    <a class="card cdo" href="brac-schedule-miss-register-cdo-bm.html?role=cdo">
+      <div class="card-icon">📱</div>
+      <div class="card-platform">DCS Mobile App</div>
+      <h2>CDO</h2>
+      <div class="role-sub">Credit &amp; Development Officer</div>
+      <ul>
+        <li>Own worklist — Reason &amp; Commitment Date entry</li>
+        <li>Grace Period, Record Collection &amp; Re-miss cycle, fully modeled</li>
+        <li>Time Simulator — test day/week/month jumps instantly</li>
+        <li>JSON database — auto-saved, with Export/Import</li>
+        <li>Manual Schedule Miss registration (no-ERP mode)</li>
+      </ul>
+      <span class="card-btn">Open CDO App →</span>
+    </a>
+
+    <a class="card bm" href="brac-schedule-miss-register-cdo-bm.html?role=bm">
+      <div class="card-icon">🧑‍💼</div>
+      <div class="card-platform">DCS Mobile App</div>
+      <h2>BM / ABM</h2>
+      <div class="role-sub">Branch Manager</div>
+      <ul>
+        <li>Read-only rollup of every CDO in the branch</li>
+        <li>Follow-up Date &amp; Comment (separate from CDO's reason)</li>
+        <li>Follow-up comments notify the CDO automatically</li>
+        <li>Escalation alerts only — 2+ missed commitments</li>
+        <li>Cannot edit Reason / Commitment Date</li>
+      </ul>
+      <span class="card-btn">Open BM App →</span>
+    </a>
+
+    <a class="card portal" href="brac-schedule-miss-register-web-portal.html">
+      <div class="card-icon">🖥️</div>
+      <div class="card-platform">DCS Web Portal</div>
+      <h2>AM · RM · PM · HO</h2>
+      <div class="role-sub">Area / Regional / Programme / Head Office</div>
+      <ul>
+        <li>Import a real CDO/BM database export — see actual supervisee data</li>
+        <li>Hierarchical rollup — each role sees its own scope</li>
+        <li>Full FR-19 column set (Division → Client Name)</li>
+        <li>Follow-up: AM/RM can add, PM/HO view-only</li>
+        <li>Time Simulator + Export to PDF, CSV, and Excel</li>
+      </ul>
+      <span class="card-btn">Open Web Portal →</span>
+    </a>
+  </div>
+
+  <div id="org-chart">
+    <h3>Visibility hierarchy</h3>
+    <div class="chain">
+      <span class="chain-node">CDO</span><span class="chain-arrow">→</span>
+      <span class="chain-node">BM (branch)</span><span class="chain-arrow">→</span>
+      <span class="chain-node">AM (area)</span><span class="chain-arrow">→</span>
+      <span class="chain-node">RM (region)</span><span class="chain-arrow">→</span>
+      <span class="chain-node">PM (programme)</span><span class="chain-arrow">→</span>
+      <span class="chain-node">HO Admin (global)</span>
+    </div>
+  </div>
+
+  <div id="org-chart" style="margin-top:18px">
+    <h3>Connecting the CDO/BM app to the Web Portal</h3>
+    <div style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.6">
+      The CDO/BM app saves its data automatically as you use it. To let AM/RM/PM/HO see that real data instead of mock data: open the CDO/BM app → menu (⋮) → <b>Export Database (.json)</b> → then in the Web Portal, click the 📂 icon in the top bar and select that file. It replaces the Mirpur-2 branch's mock records with the real ones — the other branches stay as mock data for comparison.
+    </div>
+  </div>
+
+  <div id="footnote">
+    This is a UI showcase built against the Schedule Miss Register BRD. The CDO/BM app persists its data locally (auto-saved, with Export/Import and a Time Simulator for testing day/week/month jumps). The Web Portal's own dataset is in-memory mock data each load, unless you import a real export as described above. Keep all three files in the same folder for the links above to work.
+  </div>
+</div>
+</body>
+</html>

@@ -88,7 +88,7 @@
     <button class="icon-btn" id="themeBtn" type="button" aria-label="Switch light or dark theme">
       <svg class="ic-sun"><use href="#i-sun"/></svg><svg class="ic-moon"><use href="#i-moon"/></svg>
     </button>
-    <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
+    <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav"><svg class="ic-open"><use href="#i-menu"/></svg><svg class="ic-close"><use href="#i-close"/></svg></button>
   </div>
   <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
 </header>
@@ -1001,7 +1001,7 @@
           <div class="device browser mini" data-device>
             <div class="browser-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url mono">kinba · seed data</span><span class="bar-actions"><button type="button" data-expand="kinba-app" aria-label="Open Kinba full screen"><svg><use href="#i-expand"/></svg></button></span></div>
             <div class="screen">
-              <div class="live" id="kinba-app" data-src="live/kinba/" data-w="1200" data-h="780" data-title="Kinba (live demo)" data-autoload>
+              <div class="live" id="kinba-app" data-src="live/kinba/" data-w="1200" data-h="780" data-min-w="760" data-title="Kinba (live demo)" data-autoload>
                 <div class="live-cover"><div class="spinner"></div><span>Loading Kinba…</span></div>
               </div>
             </div>
@@ -1173,7 +1173,7 @@
     <div class="contact-grid reveal">
       <div class="contact-card main">
         <span class="mono label">Email</span>
-        <a class="big-link" href="mailto:ayazelahimullick12@gmail.com">ayazelahimullick12@gmail.com</a>
+        <a class="big-link" href="mailto:ayazelahimullick12@gmail.com">ayazelahimullick12<wbr>@gmail.com</a>
         <button class="btn ghost" type="button" id="copyEmail" data-copy="ayazelahimullick12@gmail.com"><svg><use href="#i-copy"/></svg> <span>Copy</span></button>
       </div>
       <a class="contact-card" href="tel:+8801629450778"><svg><use href="#i-phone"/></svg><span class="mono label">Phone</span><b>+880 1629 450778</b></a>
@@ -1196,7 +1196,20 @@
 <button class="expand-close btn" id="expandClose" type="button" hidden><svg><use href="#i-close"/></svg> Close <span class="mono">Esc</span></button>
 
 <nav class="mobile-nav" id="mobileNav" hidden aria-label="Sections">
-  <a href="#about">Profile</a><a href="#journey">Journey</a><a href="#brac">BRAC</a><a href="#university">University</a><a href="#skills">Skills</a><a href="#contact">Contact</a>
+  <div class="mn-links">
+    <a href="#about"><span class="mono">01</span>Profile</a>
+    <a href="#journey"><span class="mono">02</span>Journey</a>
+    <a href="#brac"><span class="mono">03</span>BRAC</a>
+    <a href="#university"><span class="mono">04</span>University</a>
+    <a href="#skills"><span class="mono">05</span>Skills</a>
+    <a href="#contact"><span class="mono">06</span>Contact</a>
+  </div>
+  <div class="mn-foot">
+    <a class="btn primary" href="assets/Ayaz-Elahi-Mullick-CV.pdf" download><svg><use href="#i-download"/></svg> CV</a>
+    <a class="btn" href="mailto:ayazelahimullick12@gmail.com"><svg><use href="#i-mail"/></svg> Email</a>
+    <a class="btn ghost" href="https://www.linkedin.com/in/ayaz-mullick-5aa3013ab/" target="_blank" rel="noopener"><svg><use href="#i-linkedin"/></svg></a>
+    <a class="btn ghost" href="https://github.com/ayaz-elahi" target="_blank" rel="noopener"><svg><use href="#i-github"/></svg></a>
+  </div>
 </nav>
 
 </body>

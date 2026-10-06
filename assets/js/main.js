@@ -50,13 +50,17 @@ $('#themeBtn').addEventListener('click', () => applyTheme(root.dataset.theme ===
    Mobile menu
    ============================================================ */
 const menuBtn = $('#menuBtn'), mobileNav = $('#mobileNav');
-function closeMenu() { mobileNav.hidden = true; menuBtn.setAttribute('aria-expanded', 'false'); }
-menuBtn.addEventListener('click', () => {
-  const open = mobileNav.hidden;
+function setMenu(open) {
   mobileNav.hidden = !open;
   menuBtn.setAttribute('aria-expanded', String(open));
-});
+  menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  document.body.classList.toggle('menu-open', open);
+}
+function closeMenu() { if (!mobileNav.hidden) setMenu(false); }
+menuBtn.addEventListener('click', () => setMenu(mobileNav.hidden));
 $$('a', mobileNav).forEach(a => a.addEventListener('click', closeMenu));
+// tapping the empty area of the menu closes it
+mobileNav.addEventListener('click', e => { if (e.target === mobileNav) closeMenu(); });
 
 /* ============================================================
    Text effects: split words, scramble, reveals, counters
@@ -290,7 +294,9 @@ function fitLive(live) {
   const r = live.getBoundingClientRect();
   if (!r.width || !r.height) return;
   // full screen on a phone: render at native size so responsive apps use their mobile layout
-  const s = isMobile() && live.closest('.is-expanded') ? 1 : Math.min(1, r.width / w, r.height / h);
+  // (data-min-w marks apps with no phone layout, which are scaled down to that width instead)
+  const minW = +live.dataset.minW || 0;
+  const s = isMobile() && live.closest('.is-expanded') ? Math.min(1, minW ? r.width / minW : 1) : Math.min(1, r.width / w, r.height / h);
   f.style.width = (r.width / s) + 'px';
   f.style.height = (r.height / s) + 'px';
   f.style.transform = `scale(${s})`;
@@ -303,7 +309,7 @@ function prepLive(live) {
   const shield = document.createElement('button');
   shield.type = 'button';
   shield.className = 'live-shield';
-  shield.innerHTML = `<span><svg><use href="#i-play"/></svg>${touch ? 'Tap' : 'Click'} to use the live app</span>`;
+  shield.innerHTML = `<span><svg><use href="#i-play"/></svg>${touch ? 'Tap to try it' : 'Click to use the live app'}</span>`;
   shield.setAttribute('aria-label', 'Use the live app: ' + (live.dataset.title || ''));
   // on phones the embed is too small to use in place, so open it full screen
   shield.addEventListener('click', () => { if (isMobile()) openExpanded(live); else setInteractive(live, true); });
@@ -525,6 +531,7 @@ function setScene(stage, key) {
     const k = el.dataset.scene || el.dataset.for || el.dataset.sceneOnly;
     el.classList.toggle('is-on', k === key);
   });
+  stage.classList.toggle('with-callout', !!stage.querySelector('.callout.is-on'));
   if (FX[key] && FX[key].on) FX[key].on(stage);
   if (key === 'live') $$('[data-scene="live"] .live, [data-scene-only="live"] .live:not([hidden])', stage).forEach(l => {
     if (!l.closest('[hidden]')) loadLive(l);
@@ -546,8 +553,8 @@ $$('.scrolly').forEach(scrolly => {
       if (next && next.dataset.step === 'live') $$('[data-scene="live"] .live, [data-scene-only="live"] .live', stage).forEach(l => { if (!l.closest('[hidden]')) loadLive(l); });
     });
   }, {
-    // phones: the stage is pinned to the top half, so a step activates as its card arrives just below it
-    rootMargin: isMobile() ? '-60% 0px -39% 0px' : '-48% 0px -48% 0px',
+    // (phones: the stage covers the top half, so a step takes over as its card rises into view)
+    rootMargin: isMobile() ? '-78% 0px -21% 0px' : '-48% 0px -48% 0px',
     threshold: 0
   });
   steps.forEach(s => io.observe(s));
